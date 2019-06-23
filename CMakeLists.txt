@@ -27,3 +27,4 @@ set(OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output")
 message("OUTPUT_DIRECTORY: ${OUTPUT_DIRECTORY}")
 
 add_subdirectory(source)
+add_subdirectory(3rdparty)
