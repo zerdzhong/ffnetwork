@@ -3,6 +3,7 @@
 
 #include <string>
 #include <memory>
+#include <functional>
 #include <ffnetwork/Request.h>
 #include <ffnetwork/Response.h>
 #include <ffnetwork/RequestTask.h>

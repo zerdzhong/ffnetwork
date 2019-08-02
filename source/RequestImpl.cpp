@@ -1,4 +1,5 @@
 #include "RequestImpl.h"
+#include <cstring>
 
 namespace ffnetwork {
     RequestImpl::RequestImpl(const std::string &url,

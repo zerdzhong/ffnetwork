@@ -1,7 +1,7 @@
 #include <ffnetwork/RequestTask.h>
 #include <ffnetwork/RequestTaskDelegate.h>
 
-namespace ffnetowork {
+namespace ffnetwork {
     class RequestTaskImpl : public RequestTask {
     public:
 
@@ -10,7 +10,7 @@ namespace ffnetowork {
 
         virtual ~RequestTaskImpl();
 
-        std::string taskIdentifier() override;
+        std::string taskIdentifier() const override;
         void cancel() override;
         bool cancelled() override;
 

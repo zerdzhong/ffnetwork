@@ -866,6 +866,9 @@ if(NOT OPENSSL_FOUND)
             ${OPENSSL_SSL_DIR}/tls_srp.c
             ${OPENSSL_SSL_DIR}/tls1.h)
 
+        add_library(OpenSSL::SSL ALIAS openssl)
+        add_library(OpenSSL::Crypto ALIAS openssl_crypto)
+
     set(OPENSSL_CRYPTO_LIBRARY openssl_crypto CACHE STRING "OpenSSL Crypto Library" FORCE)
     set(OPENSSL_SSL_LIBRARY openssl CACHE STRING "OpenSSL SSL Library" FORCE)
     set_target_properties(openssl_crypto openssl
