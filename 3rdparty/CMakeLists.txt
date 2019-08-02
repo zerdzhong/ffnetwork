@@ -924,7 +924,7 @@ endif()
 
 add_subdirectory(curl EXCLUDE_FROM_ALL)
 
-if(TEST)
+if(CMAKE_BUILD_TYPE MATCHES Debug)
     add_subdirectory(googletest)
-endif(TEST)
+endif()
 
