@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.10)
 
 project(ffnetwork)
 
+enable_testing()
+
 set(SOURCE_FILES 
     main.cpp
     RequestImplTest.cpp
@@ -15,5 +17,7 @@ target_include_directories(unittest
         "${FFNETWORK_INCLUDE_DIRECTORY}"
         ${CMAKE_CURRENT_LIST_DIR}/../source
 )
+
+add_test(NAME ffnetwork_unittest COMMAND unittest)
 
 
