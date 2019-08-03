@@ -1,7 +1,6 @@
 #include "gtest/gtest.h"
-#include "log/log_macro.h"
 #include <memory>
-
+#include <unordered_map>
 #define private public
 #define protected public
 
@@ -14,7 +13,12 @@
 using namespace ffnetwork;
 
  TEST(RequestImplTest, basic) {
-     LOGD("RequestImplTest basic test");
-     auto request_impl = new RequestImpl("https://github.com",{{"Range","0-"}});
-     EXPECT_EQ(request_impl->url(), "https://github.com");
+     std::unordered_map<std::string, std::string> headers = {
+             {"Range","0-"},
+             {"User-Agent", "test-ua"}
+             };
+     std::string url = "https://github.com";
+     auto request_impl = new RequestImpl(url, headers);
+    GTEST_ASSERT_EQ(request_impl->url(), url);
+    GTEST_ASSERT_EQ(request_impl->headerMap(), headers);
  }
