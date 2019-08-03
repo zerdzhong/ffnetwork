@@ -9,6 +9,10 @@ if(NOT ANDROID)
 endif(NOT ANDROID)
 
 if(NOT OPENSSL_FOUND)
+
+    execute_process(COMMAND git apply ${CMAKE_CURRENT_SOURCE_DIR}/openssl.patch
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/openssl)
+
     message(STATUS "OpenSSL not found on system, use submodule instead")
     set(OPENSSL_FOUND ON CACHE BOOL "OpenSSL is found" FORCE)
     set(OpenSSL_FOUND ON CACHE BOOL "OpenSSL is found" FORCE)
@@ -905,6 +909,9 @@ endif()
 
 
 #config curl
+execute_process(COMMAND git apply ${CMAKE_CURRENT_SOURCE_DIR}/curl.patch
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/curl)
+
 set(CMAKE_DEBUG_POSTFIX "" CACHE STRING "Override CMAKE_DEBUG_POSTFIX, which curl sets to '-d'")
 set(BUILD_TESTING OFF CACHE BOOL "Don't build curl tests" FORCE)
 set(BUILD_CURL_EXE OFF CACHE BOOL "Don't build curl executables" FORCE)

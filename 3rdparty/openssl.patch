@@ -1,0 +1,10 @@
+diff --git a/util/mkbuildinf.pl b/util/mkbuildinf.pl
+index ffa8a39933..9ca10b1fd2 100755
+--- a/util/mkbuildinf.pl
++++ b/util/mkbuildinf.pl
+@@ -1,4 +1,4 @@
+-#!/usr/local/bin/perl
++#!/usr/bin/env perl
+ 
+ my ($cflags, $platform) = @ARGV;
+ 
