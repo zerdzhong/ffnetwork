@@ -5,7 +5,7 @@ if [ "$TRAVIS_OS_NAME" != "linux" ]; then
     exit 0;
 fi
 
-# if ! [ -x "$(command -v cmake)" ]; then
+if ! [ -x "$(command -v cmake)" ]; then
     DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
 
     mkdir ${DEPS_DIR} && cd ${DEPS_DIR}
@@ -16,4 +16,4 @@ fi
     PATH=${DEPS_DIR}/cmake-install:${DEPS_DIR}/cmake-install/bin:$PATH
     echo $PATH
     cd ${TRAVIS_BUILD_DIR}
-# fi
+fi
