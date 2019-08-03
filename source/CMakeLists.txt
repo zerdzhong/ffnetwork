@@ -8,6 +8,8 @@ set(SOURCE_FILES
     RequestImpl.cpp
     RequestTaskImpl.h
     RequestTaskImpl.cpp
+    log/logger.h
+    log/logger.cpp
 )
 
 add_library(ffnetwork 
