@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+set -e
+
 cmake --version
 mkdir build || true
 cd build
