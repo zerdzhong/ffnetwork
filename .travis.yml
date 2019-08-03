@@ -9,7 +9,7 @@ matrix:
   - os: linux
     compiler: gcc
     env:
-    - MATRIX_EVAL="CC=gcc-7.4.0 && CXX=g++-7.4.0"
+    - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
 
   - os: linux
     compiler: clang
@@ -17,6 +17,9 @@ matrix:
     - MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
 
   - os: osx
+    compiler: clang
+    env:
+    - MATRIX_EVAL="CC=clang && CXX=clang++"
 
 install:
   - ./ci/install-${TRAVIS_OS_NAME}.sh
@@ -37,7 +40,7 @@ addons:
     - ubuntu-toolchain-r-test
     - llvm-toolchain-precise-3.9
     packages:
-    - g++-7.4.0
+    - g++-7
     - clang-3.9
 
 after_success:
