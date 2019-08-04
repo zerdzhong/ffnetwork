@@ -4,9 +4,9 @@
 #include <string>
 #include <memory>
 #include <functional>
-#include <ffnetwork/Request.h>
-#include <ffnetwork/Response.h>
-#include <ffnetwork/RequestTask.h>
+#include <ffnetwork/request.h>
+#include <ffnetwork/response.h>
+#include <ffnetwork/request_task.h>
 
 
 namespace ffnetwork {

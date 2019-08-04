@@ -1,7 +1,7 @@
-#ifndef FFNETWORK_REQUESTTASKDELEGATE_H
-#define FFNETWORK_REQUESTTASKDELEGATE_H
+#ifndef FFNETWORK_REQUEST_TASK_DELEGATE_H
+#define FFNETWORK_REQUEST_TASK_DELEGATE_H
 
-#include <ffnetwork/RequestTask.h>
+#include <ffnetwork/request_task.h>
 
 namespace ffnetwork {
     class RequestTaskDelegate {

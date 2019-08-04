@@ -1,5 +1,5 @@
-#include <ffnetwork/RequestTask.h>
-#include <ffnetwork/RequestTaskDelegate.h>
+#include <ffnetwork/request_task.h>
+#include <ffnetwork/request_task_delegate.h>
 
 namespace ffnetwork {
     class RequestTaskImpl : public RequestTask {

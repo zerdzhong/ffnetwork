@@ -1,5 +1,5 @@
-#include <ffnetwork/Request.h>
-#include "RequestImpl.h"
+#include <ffnetwork/request.h>
+#include "request_impl.h"
 
 namespace ffnetwork {
     const std::string GetMethod = "GET";

@@ -1,9 +1,9 @@
-#ifndef FFNETWORK_REQUESTTASK_H
-#define FFNETWORK_REQUESTTASK_H
+#ifndef FFNETWORK_REQUEST_TASK_H
+#define FFNETWORK_REQUEST_TASK_H
 
 #include <string>
 #include <memory>
-#include <ffnetwork/Request.h>
+#include <ffnetwork/request.h>
 
 
 namespace ffnetwork {

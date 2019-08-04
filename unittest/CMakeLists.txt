@@ -9,7 +9,7 @@ enable_testing()
 
 set(SOURCE_FILES 
     main.cpp
-    RequestImplTest.cpp
+        request_impl_test.cpp
 )
 
 add_executable(unittest ${SOURCE_FILES})

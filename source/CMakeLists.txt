@@ -4,24 +4,26 @@ project(ffnetwork)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(SOURCE_FILES 
-    Client.cpp
-    Request.cpp
-    RequestImpl.h
-    RequestImpl.cpp
-    RequestTaskImpl.h
-    RequestTaskImpl.cpp
-    log/logger.h
-    log/logger.cpp
-    log/log_macro.h
+set(SOURCE_FILES
+        client.cpp
+        request.cpp
+        request_impl.h
+        request_impl.cpp
+        request_task_impl.h
+        request_task_impl.cpp
+        curl_client.h
+        curl_client.cpp
+        log/logger.h
+        log/logger.cpp
+        log/log_macro.h
 )
 
 add_library(ffnetwork 
-    "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/Client.h"
-    "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/RequestTask.h"
-    "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/RequestTaskDelegate.h"
-    "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/Request.h"
-    "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/Response.h"
+    "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/client.h"
+    "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/request_task.h"
+    "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/request_task_delegate.h"
+    "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/request.h"
+    "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/response.h"
     ${SOURCE_FILES}
 )
 

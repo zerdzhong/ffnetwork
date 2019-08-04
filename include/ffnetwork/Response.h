@@ -3,7 +3,7 @@
 
 #include <string>
 #include <memory>
-#include <ffnetwork/Request.h>
+#include <ffnetwork/request.h>
 
 namespace ffnetwork {
     class Response {

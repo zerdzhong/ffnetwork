@@ -1,9 +1,9 @@
 //
-// Created by 钟振东 on 2019-06-23.
+// Created by zerdzhong on 2019-06-23.
 //
 
 #ifndef FFNETWORK_CURLCLIENT_H
-#define FFNETWORK_CURLCLIENT_H
+#define FFNETWORK_CURL_CLIENT_H
 
 
 class CurlClient {
