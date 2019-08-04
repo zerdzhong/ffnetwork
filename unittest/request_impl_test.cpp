@@ -19,6 +19,6 @@ using namespace ffnetwork;
              };
      std::string url = "https://github.com";
      auto request_impl = new RequestImpl(url, headers);
-    GTEST_ASSERT_EQ(request_impl->url(), url);
-    GTEST_ASSERT_EQ(request_impl->headerMap(), headers);
+     GTEST_ASSERT_EQ(request_impl->url(), url);
+     GTEST_ASSERT_EQ(request_impl->headerMap(), headers);
  }

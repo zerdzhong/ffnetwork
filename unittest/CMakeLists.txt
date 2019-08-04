@@ -8,8 +8,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 enable_testing()
 
 set(SOURCE_FILES 
-    main.cpp
+        main.cpp
         request_impl_test.cpp
+        request_test.cpp
 )
 
 add_executable(unittest ${SOURCE_FILES})
