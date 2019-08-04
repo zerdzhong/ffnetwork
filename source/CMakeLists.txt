@@ -16,6 +16,13 @@ set(SOURCE_FILES
         log/logger.h
         log/logger.cpp
         log/log_macro.h
+        thread/message_queue.h
+        thread/message_queue.cpp
+        thread/message_handler.h
+        thread/message_handler.cpp
+        thread/thread_annotations.h
+        thread/critical_section.h
+        thread/critical_section.cpp
 )
 
 add_library(ffnetwork 

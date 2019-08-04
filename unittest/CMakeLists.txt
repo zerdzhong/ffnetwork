@@ -11,6 +11,7 @@ set(SOURCE_FILES
         main.cpp
         request_impl_test.cpp
         request_test.cpp
+        message_queue_test.cpp
 )
 
 add_executable(unittest ${SOURCE_FILES})
