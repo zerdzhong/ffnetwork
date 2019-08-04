@@ -202,4 +202,38 @@ namespace ffnetwork {
         msg_queue_.push_back(msg);
     }
 
+    void MessageQueue::Clear(MessageHandler* phandler,
+                         uint32_t id,
+                         MessageList* removed) {
+        
+        CriticalScope cs(&critical_section_);
+        
+        // Remove messages with phandler
+        if (fPeekKeep_ && msgPeek_.Match(phandler, id)) {
+            if (removed) {
+                removed->push_back(msgPeek_);
+            } else {
+                delete msgPeek_.pdata;
+            }
+            fPeekKeep_ = false;
+        } 
+        // Remove from ordered message queue
+        for (MessageList::iterator it = msg_queue_.begin(); it != msg_queue_.end();) {
+            if (it->Match(phandler, id)) {
+                if (removed) {
+                    removed->push_back(*it);
+                } else {
+                    delete it->pdata;
+                }
+                it = msg_queue_.erase(it);
+            } else {
+            ++it;
+            }
+        }
+    }
+    
+    
+    void MessageQueue::Dispatch(Message *pmsg) {
+        pmsg->phandler->OnMessage(pmsg);
+    }
 }

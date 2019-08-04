@@ -10,9 +10,12 @@
 
 using namespace ffnetwork ;
 
-class TestMessageQueue : public testing::Test, public MessageQueue {
-
-}
+class MessageQueueTest : public testing::Test, public MessageQueue {
+public:
+    bool IsLocked() {
+        return false;
+    }
+};
 
 struct DeletedLockChecker {
     DeletedLockChecker(MessageQueueTest* test, bool* was_locked, bool* deleted)

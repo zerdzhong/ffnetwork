@@ -47,6 +47,11 @@ namespace ffnetwork {
             memset(this, 0, sizeof(*this));
         }
 
+        inline bool Match(MessageHandler* handler, uint32_t id) const {
+            return (handler == NULL || handler == phandler)
+                && (id == MQID_ANY || id == message_id);
+        }
+
         MessageHandler* phandler;
         uint32_t message_id;
         MessageData* pdata;
