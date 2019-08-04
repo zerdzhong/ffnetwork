@@ -1,3 +1,6 @@
+#ifndef FFNETWORK_REQUEST_IMPL_H
+#define FFNETWORK_REQUEST_IMPL_H
+
 #include <ffnetwork/request.h>
 
 namespace ffnetwork {
@@ -31,3 +34,5 @@ namespace ffnetwork {
         size_t data_length_;
     };
 }//end of ffnetwork
+
+#endif

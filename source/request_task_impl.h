@@ -1,3 +1,6 @@
+#ifndef FFNETWORK_REQUEST_TASK_IMPL_H
+#define FFNETWORK_REQUEST_TASK_IMPL_H
+
 #include <ffnetwork/request_task.h>
 #include <ffnetwork/request_task_delegate.h>
 
@@ -20,3 +23,5 @@ namespace ffnetwork {
         const std::weak_ptr<RequestTaskDelegate> delegate_;
     };
 }//end of namespace ffnetwork
+
+#endif
