@@ -23,6 +23,10 @@ set(SOURCE_FILES
         thread/thread_annotations.h
         thread/critical_section.h
         thread/critical_section.cpp
+        thread/thread.h
+        thread/thread.cpp
+        utils/time_utils.h
+        utils/time_utils.cpp
 )
 
 add_library(ffnetwork 
@@ -38,4 +42,7 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
     target_compile_definitions(ffnetwork PUBLIC -DDebug)
 endif()
 
-target_include_directories(ffnetwork PUBLIC "${FFNETWORK_INCLUDE_DIRECTORY}")
+target_include_directories(ffnetwork PUBLIC 
+    "${FFNETWORK_INCLUDE_DIRECTORY}"
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
