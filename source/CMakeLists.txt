@@ -27,7 +27,7 @@ set(SOURCE_FILES
         thread/thread.cpp
         utils/time_utils.h
         utils/time_utils.cpp
-)
+        thread/event.cpp thread/event.h)
 
 add_library(ffnetwork 
     "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/client.h"
