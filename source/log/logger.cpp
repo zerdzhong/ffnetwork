@@ -1,8 +1,6 @@
 #include "logger.h"
 
-#if !LINUX && !ANDROID
 #include <sys/timeb.h>
-#endif
 
 #include <sstream>
 #include <unistd.h>
@@ -61,7 +59,7 @@ static pthread_mutex_t gCommonLogMutex = PTHREAD_MUTEX_INITIALIZER;
 #else
         pthread_mutex_lock(&gCommonLogMutex);
         struct tm *now_time;
-        struct timeb tb{};
+        struct timeb tb;
         char date_str[16];
         char time_str[16];
         char ms_str[4];
@@ -72,7 +70,7 @@ static pthread_mutex_t gCommonLogMutex = PTHREAD_MUTEX_INITIALIZER;
         sprintf(ms_str, "%03d", tb.millitm);
 
         __ss__ << date_str << " " << time_str << "." << ms_str << " [" << log_tag << "]:" << "[" << module_tag << "]:";
-        
+
         auto temp = std::vector<char> {};
         auto length = std::size_t {63};
         while (temp.size() <= length) {
