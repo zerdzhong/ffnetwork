@@ -6,6 +6,9 @@
 #include <stdint.h>  // for uintptr_t and (u)int_t types.
 
 namespace ffnetwork {
+
+    typedef uint32_t TimeStamp;
+
     static const int64_t kNumMillisecsPerSec = INT64_C(1000);
     static const int64_t kNumMicrosecsPerSec = INT64_C(1000000);
     static const int64_t kNumNanosecsPerSec = INT64_C(1000000000);
