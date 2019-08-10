@@ -1,7 +1,8 @@
 #include "thread.h"
 #include "log/log_macro.h"
 #include "utils/time_utils.h"
-#include <stdio.h>
+#include <cstdio>
+#include <cassert>
 
 #if defined(LINUX)
 #include <sys/prctl.h>
@@ -336,7 +337,7 @@ bool Thread::WrapCurrentWithThreadManager(ThreadManager* thread_manager,
   }
 #elif defined(LINUX) || defined(ANDROID)
         prctl(PR_SET_NAME, reinterpret_cast<unsigned long>(name));  // NOLINT
-#else
+#elif defined(MAC) || defined(IOS)
         pthread_setname_np(name);
 #endif
     }

@@ -38,6 +38,16 @@ add_library(ffnetwork
     ${SOURCE_FILES}
 )
 
+if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    target_compile_definitions(ffnetwork PRIVATE WIN)
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Android")
+    target_compile_definitions(ffnetwork PRIVATE ANDROID)
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    target_compile_definitions(ffnetwork PRIVATE LINUX)
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    target_compile_definitions(ffnetwork PRIVATE MAC)
+endif ()
+
 if(CMAKE_BUILD_TYPE MATCHES Debug)
     target_compile_definitions(ffnetwork PUBLIC -DDebug)
 endif()
