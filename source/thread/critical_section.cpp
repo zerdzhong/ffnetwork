@@ -21,11 +21,7 @@ namespace ffnetwork {
     }
 
     bool CriticalSection::TryEnter() EXCLUSIVE_TRYLOCK_FUNCTION(true) {
-        if (pthread_mutex_trylock(&mutex_) != 0) {
-            return false;
-        }
-
-        return true;
+        return pthread_mutex_trylock(&mutex_) == 0;
     }
 
     void CriticalSection::Leave() UNLOCK_FUNCTION() {

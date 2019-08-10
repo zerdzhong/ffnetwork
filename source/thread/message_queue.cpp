@@ -218,7 +218,7 @@ namespace ffnetwork {
             fPeekKeep_ = false;
         } 
         // Remove from ordered message queue
-        for (MessageList::iterator it = msg_queue_.begin(); it != msg_queue_.end();) {
+        for (auto it = msg_queue_.begin(); it != msg_queue_.end();) {
             if (it->Match(phandler, id)) {
                 if (removed) {
                     removed->push_back(*it);
@@ -227,7 +227,7 @@ namespace ffnetwork {
                 }
                 it = msg_queue_.erase(it);
             } else {
-            ++it;
+                ++it;
             }
         }
     }

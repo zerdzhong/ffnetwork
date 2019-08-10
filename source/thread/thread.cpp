@@ -23,6 +23,7 @@ Thread* Thread::Current() {
 
 ThreadManager::ThreadManager() {
     pthread_key_create(&key_, NULL);
+    WrapCurrentThread();
 }
 
 ThreadManager::~ThreadManager() {
@@ -62,8 +63,9 @@ struct ThreadInit {
 
 Thread::Thread()
     : owned_(true),
-      blocking_calls_allowed_(true) {
-    SetName("Thread", this);  // default name
+      blocking_calls_allowed_(true),
+      running_(true, false){
+    SetName("ffnetwork-thread", this);  // default name
 }
 
 Thread::~Thread() {
@@ -103,6 +105,8 @@ bool Thread::Start(Runnable* runnable) {
         LOGD("Unable to create pthread, error %d", error_code);
         return false;
     }
+
+    running_.Set();
     
     return true;
 }
@@ -120,18 +124,15 @@ void Thread::Join() {
 
         void *pv;
         pthread_join(thread_, &pv);
+
+        running_.Reset();
     }
 }
 
 void* Thread::PreRun(void* pv) {
     ThreadInit* init = static_cast<ThreadInit*>(pv);
     ThreadManager::Instance()->SetCurrentThread(init->thread);
-
-    #if defined(LINUX) || defined(ANDROID)
-        prctl(PR_SET_NAME, reinterpret_cast<unsigned long>(name));
-    #elif defined(MAC) || defined(IOS)
-        pthread_setname_np(name);
-    #endif
+    Thread::SetThreadName(init->thread->name_.c_str());
     {
         if (init->runnable) {
             init->runnable->Run(init->thread);
@@ -172,11 +173,33 @@ bool Thread::IsOwned() {
 void Thread::Clear(MessageHandler* phandler,
                    uint32_t id,
                    MessageList* removed) {
-//TO-DO
+    CriticalScope cs(&critical_section_);
+
+    auto iter = send_list_.begin();
+
+    while (iter != send_list_.end()) {
+        _SendMessage message = *iter;
+        if (message.msg.Match(phandler, id)) {
+            if (removed) {
+                removed->push_back(message.msg);
+            } else {
+                delete message.msg.pdata;
+            }
+
+            iter = send_list_.erase(iter);
+            *message.ready = true;
+            continue;
+        }
+
+        ++iter;
+    }
+
+    MessageQueue::Clear(phandler, id, removed);
+
 }
 
 void Thread::ReceiveSends() {
-    //TO-DO
+    ReceiveSendsFromThread(NULL);
 }
 
 bool Thread::WrapCurrent() {
@@ -186,6 +209,7 @@ bool Thread::WrapCurrent() {
 void Thread::UnwrapCurrent() {
     // Clears the platform-specific thread-specific storage.
     ThreadManager::Instance()->SetCurrentThread(NULL);
+    running_.Reset();
 }
 
 void Thread::SafeWrapCurrent() {
@@ -201,8 +225,132 @@ bool Thread::WrapCurrentWithThreadManager(ThreadManager* thread_manager,
     thread_ = pthread_self();
     
     owned_ = false;
+    running_.Set();
     thread_manager->SetCurrentThread(this);
     return true;
 }
 
+    void Thread::Send(MessageHandler *phandler, uint32_t id, MessageData *pdata) {
+        if (fStop_) {
+            return;
+        }
+
+        Message msg;
+        msg.phandler = phandler;
+        msg.message_id = id;
+        msg.pdata = pdata;
+        if (IsCurrent()) {
+            phandler->OnMessage(&msg);
+            return;
+        }
+
+
+        AutoThread thread;
+        Thread *current_thread = Thread::Current();
+        assert(current_thread != NULL);  // AutoThread ensures this
+
+        bool ready = false;
+        {
+            CriticalScope cs(&critical_section_);
+            _SendMessage send_msg;
+            send_msg.thread = current_thread;
+            send_msg.msg = msg;
+            send_msg.ready = &ready;
+            send_list_.push_back(send_msg);
+        }
+
+        critical_section_.Enter();
+        while (!ready) {
+            critical_section_.Leave();
+            // We need to limit "ReceiveSends" to |this| thread to avoid an arbitrary
+            // thread invoking calls on the current thread.
+            current_thread->ReceiveSendsFromThread(this);
+            critical_section_.Enter();
+        }
+        critical_section_.Leave();
+
+    }
+
+    void Thread::ReceiveSendsFromThread(const Thread *source) {
+        _SendMessage send_msg;
+
+        while(PopSendMessageFromThread(source, &send_msg)) {
+            send_msg.msg.phandler->OnMessage(&send_msg.msg);
+            *send_msg.ready = true;
+        }
+
+    }
+
+    bool Thread::PopSendMessageFromThread(const Thread *source, _SendMessage *msg) {
+        CriticalScope sc(&critical_section_);
+
+        for (auto it = send_list_.begin();
+             it != send_list_.end(); ++it) {
+            if (it->thread == source || source == NULL) {
+                *msg = *it;
+                send_list_.erase(it);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    bool Thread::SleepMs(int millis) {
+        return false;
+    }
+
+    // static
+    void Thread::AssertBlockingIsAllowedOnCurrentThread() {
+#if defined(DEBUG)
+        Thread* current = Thread::Current();
+        assert(!current || current->blocking_calls_allowed_);
+#endif
+    }
+
+    bool Thread::SetAllowBlockingCalls(bool allow) {
+        return blocking_calls_allowed_ = allow;
+    }
+
+    void Thread::InvokeBegin() {
+
+    }
+
+    void Thread::InvokeEnd() {
+
+    }
+
+    void Thread::SetThreadName(const char* name) {
+#if defined(WIN)
+            struct {
+    DWORD dwType;
+    LPCSTR szName;
+    DWORD dwThreadID;
+    DWORD dwFlags;
+  } threadname_info = {0x1000, name, static_cast<DWORD>(-1), 0};
+
+  __try {
+    ::RaiseException(0x406D1388, 0, sizeof(threadname_info) / sizeof(DWORD),
+                     reinterpret_cast<ULONG_PTR*>(&threadname_info));
+  } __except (EXCEPTION_EXECUTE_HANDLER) {  // NOLINT
+  }
+#elif defined(LINUX) || defined(ANDROID)
+        prctl(PR_SET_NAME, reinterpret_cast<unsigned long>(name));  // NOLINT
+#else
+        pthread_setname_np(name);
+#endif
+    }
+
+    AutoThread::AutoThread() {
+        if (!ThreadManager::Instance()->CurrentThread()) {
+            ThreadManager::Instance()->SetCurrentThread(this);
+        }
+    }
+
+    AutoThread::~AutoThread() {
+        Stop();
+        if (ThreadManager::Instance()->CurrentThread() == this) {
+            ThreadManager::Instance()->SetCurrentThread(NULL);
+        }
+    }
 }

@@ -45,6 +45,8 @@ namespace ffnetwork {
             functor_();
         }
 
+        void result() const {}
+
     private:
         FunctorT functor_;
     };

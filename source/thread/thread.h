@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include <string>
 #include "message_queue.h"
+#include "event.h"
 
 namespace ffnetwork {
 
@@ -24,7 +25,7 @@ namespace ffnetwork {
         Thread *WrapCurrentThread();
         void UnwrapCurrentThread();
     private:
-        pthread_key_t key_;
+        pthread_key_t key_{};
 
         void operator=(const ThreadManager&) = delete;
         ThreadManager(const ThreadManager&) = delete;
@@ -60,6 +61,7 @@ namespace ffnetwork {
         }
 
         static bool SleepMs(int millis);
+        static void AssertBlockingIsAllowedOnCurrentThread();
 
         const std::string& name() const { return name_; }
         bool SetName(const std::string& name, const void* obj);
@@ -94,20 +96,32 @@ namespace ffnetwork {
         void Join();
     private:
         static void *PreRun(void *pv);
+        static void SetThreadName(const char* name);
 
         bool WrapCurrentWithThreadManager(ThreadManager* thread_manager,
                                     bool need_synchronize_access);
 
-        bool running() { /* return running_.Wait(0); */ return false;}
+        bool running() { return running_.Wait(0); }
 
         void ReceiveSendsFromThread(const Thread* source);
 
         bool PopSendMessageFromThread(const Thread* source, _SendMessage* msg);
 
+
+        template <class ReturnT, class FunctorT>
+        ReturnT Invoke(const FunctorT& functor) {
+            InvokeBegin();
+            FunctorMessageHandler<ReturnT, FunctorT> handler(functor);
+            Send(&handler);
+            InvokeEnd();
+            return handler.result();
+        }
+
         void InvokeBegin();
         void InvokeEnd();
-        std::list<_SendMessage> sendlist_;
+        std::list<_SendMessage> send_list_;
         std::string name_;
+        Event running_;  // Signalled means running.
 
         pthread_t thread_;
 
@@ -118,6 +132,15 @@ namespace ffnetwork {
 
         void operator=(const Thread&) = delete;
         Thread(const Thread&) = delete;
+    };
+
+    class AutoThread : public Thread {
+    public:
+        explicit AutoThread();
+        ~AutoThread() override;
+    private:
+        void operator=(const AutoThread&) = delete;
+        AutoThread(const AutoThread&) = delete;
     };
 }
 

@@ -73,6 +73,7 @@ namespace ffnetwork {
         }
 
         pthread_mutex_unlock(&event_mutex_);
+
         return (error == 0);
     }
 }

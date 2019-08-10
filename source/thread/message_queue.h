@@ -3,10 +3,10 @@
 
 #include "message_handler.h"
 #include "critical_section.h"
-#include <string.h>
+#include <cstring>
 #include <vector>
 #include <list>
-#include <stdint.h>
+#include <cstdint>
 
 namespace ffnetwork {
     class MessageQueue;
