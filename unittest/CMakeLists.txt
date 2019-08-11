@@ -27,12 +27,10 @@ add_test(NAME ffnetwork_unittest COMMAND unittest)
 
 if(CODE_COVERAGE)
   message("Using Code Coverage")
-  if(CMAKE_COMPILER_IS_GNUCXX)
-    include(CodeCoverage)
-    APPEND_COVERAGE_COMPILER_FLAGS()
-    SETUP_TARGET_FOR_COVERAGE_GCOVR_HTML(NAME ffnetwork_coverage 
-        EXECUTABLE ctest -j 3
-        DEPENDENCIES unittest)
-  endif()
+  include(CodeCoverage)
+  APPEND_COVERAGE_COMPILER_FLAGS()
+  SETUP_TARGET_FOR_COVERAGE_GCOVR_HTML(NAME ffnetwork_coverage
+          EXECUTABLE ctest -j 3
+          DEPENDENCIES unittest)
 endif()
 
