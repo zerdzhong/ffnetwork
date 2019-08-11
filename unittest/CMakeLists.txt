@@ -29,8 +29,14 @@ if(CODE_COVERAGE)
   message("Using Code Coverage")
   include(CodeCoverage)
   APPEND_COVERAGE_COMPILER_FLAGS()
-  SETUP_TARGET_FOR_COVERAGE_GCOVR_HTML(NAME ffnetwork_coverage
+  if(CMAKE_COMPILER_IS_GNUCXX)
+    SETUP_TARGET_FOR_COVERAGE_GCOVR_HTML(NAME ffnetwork_coverage
           EXECUTABLE ctest -j 3
           DEPENDENCIES unittest)
+  else()
+    SETUP_TARGET_FOR_COVERAGE_LCOV(NAME ffnetwork_coverage
+            EXECUTABLE ctest -j 3
+            DEPENDENCIES unittest)
+  endif()
 endif()
 
