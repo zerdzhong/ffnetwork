@@ -17,3 +17,5 @@ if ! [ -x "$(command -v cmake)" ]; then
     echo $PATH
     cd ${TRAVIS_BUILD_DIR}
 fi
+
+pip install --user cpp-coveralls
