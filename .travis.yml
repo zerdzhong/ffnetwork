@@ -14,7 +14,7 @@ matrix:
   - os: linux
     compiler: clang
     env:
-    - MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
+    - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
 
   - os: osx
     compiler: clang
@@ -38,10 +38,10 @@ addons:
     #   https://github.com/travis-ci/apt-source-whitelist/blob/master/ubuntu.json
     sources:
     - ubuntu-toolchain-r-test
-    - llvm-toolchain-precise-3.9
+    - llvm-toolchain-trusty-5.0
     packages:
     - g++-7
-    - clang-3.9
+    - clang-5.0
 
 after_success:
   - coveralls --root .. -E ".*external.*" -E ".*CMakeFiles.*" -E ".*test/.*.cpp.*"
