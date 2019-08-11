@@ -22,3 +22,11 @@ pyenv global 2.7.6
 pyenv rehash
 pip install cpp-coveralls
 pyenv rehash
+
+
+if brew ls --versions lcov > /dev/null; then
+  lcov --version
+else
+  brew install lcov
+fi
+

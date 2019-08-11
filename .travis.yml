@@ -41,6 +41,7 @@ addons:
     - g++-7
     - clang-5.0
     - gcovr
+    - locv
 
 after_success:
   - coveralls --exclude lib --exclude tests --gcov-options '\-lp'
