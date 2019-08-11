@@ -44,7 +44,7 @@ addons:
     - lcov
 
 after_success:
-  - coveralls --exclude build --exclude include --exclude 3rdparty --gcov-options '\-lp'
+  - coveralls --exclude include --exclude 3rdparty --gcov-options '\-lp'
 
 notifications:
   email: false
