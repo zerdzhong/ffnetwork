@@ -7,6 +7,8 @@ fi
 
 brew update
 
+brew upgrade cmake
+
 if brew ls --versions pyenv > /dev/null; then
   pyenv --version
 else
