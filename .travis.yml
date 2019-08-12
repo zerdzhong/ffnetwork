@@ -9,6 +9,8 @@ matrix:
     compiler: gcc
     env:
     - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+    after_success:
+    - coveralls --exclude include --exclude 3rdparty --gcov-options '\-lp'
 
   - os: linux
     compiler: clang
@@ -42,9 +44,6 @@ addons:
     - clang-5.0
     - gcovr
     - lcov
-
-after_success:
-  - coveralls --exclude include --exclude 3rdparty --gcov-options '\-lp'
 
 notifications:
   email: false
