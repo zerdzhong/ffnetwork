@@ -10,7 +10,7 @@ matrix:
     env:
     - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
     after_success:
-    - coveralls --exclude build --exclude include --exclude 3rdparty --gcov-options '\-lp'
+    - coveralls --exclude include --exclude 3rdparty --gcov-options '\-lp'
 
   - os: linux
     compiler: clang
