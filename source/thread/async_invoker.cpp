@@ -4,6 +4,7 @@
 
 #include "async_invoker.h"
 #include "log/log_macro.h"
+#include <functional>
 
 namespace ffnetwork {
 

@@ -7,6 +7,7 @@
 #include <vector>
 #include <list>
 #include <cstdint>
+#include <memory>
 
 namespace ffnetwork {
     class MessageQueue;
