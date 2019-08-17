@@ -74,6 +74,16 @@ namespace ffnetwork {
                     uint32_t id = 0,
                     MessageData* pdata = NULL);
 
+
+        template <class ReturnT, class FunctorT>
+        ReturnT Invoke(const FunctorT& functor) {
+            InvokeBegin();
+            FunctorMessageHandler<ReturnT, FunctorT> handler(functor);
+            Send(&handler);
+            InvokeEnd();
+            return handler.result();
+        }
+
         // From MessageQueue
         void Clear(MessageHandler* phandler,
                 uint32_t id = MQID_ANY,
@@ -106,16 +116,6 @@ namespace ffnetwork {
         void ReceiveSendsFromThread(const Thread* source);
 
         bool PopSendMessageFromThread(const Thread* source, _SendMessage* msg);
-
-
-        template <class ReturnT, class FunctorT>
-        ReturnT Invoke(const FunctorT& functor) {
-            InvokeBegin();
-            FunctorMessageHandler<ReturnT, FunctorT> handler(functor);
-            Send(&handler);
-            InvokeEnd();
-            return handler.result();
-        }
 
         void InvokeBegin();
         void InvokeEnd();

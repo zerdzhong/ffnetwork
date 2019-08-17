@@ -39,6 +39,39 @@ namespace ffnetwork {
         virtual ~MessageData() {}
     };
 
+    template <class T>
+    class TypedMessageData : public MessageData {
+    public:
+        explicit TypedMessageData(const T& data) : data_(data) {}
+        const T& data() const { return data_; }
+        T& data() { return data_; }
+    private:
+        T data_;
+    };
+
+    template <class T>
+    class UniqueMessageData : public MessageData {
+    public:
+        explicit UniqueMessageData(std::unique_ptr<T> data)
+                : data_(std::move(data)) {}
+
+        const T& data() const { return *data_; }
+        T& data() { return *data_; }
+    private:
+        std::unique_ptr<T> data_;
+    };
+
+    template <class T>
+    class SharedMessageData : public MessageData {
+    public:
+        explicit SharedMessageData(std::shared_ptr<T> data) : data_(data) {}
+        const std::shared_ptr<T>& data() const { return data_; }
+        std::shared_ptr<T>& data() { return data_; }
+    private:
+        std::shared_ptr<T> data_;
+    };
+
+
     const uint32_t MQID_ANY = static_cast<uint32_t>(-1);
     const uint32_t MQID_DISPOSE = static_cast<uint32_t>(-2);
 

@@ -74,10 +74,10 @@ namespace ffnetwork {
     }
 
     std::string RequestImpl::hash() const {
-
+        return "";
     }
         
     std::string RequestImpl::serialise() const {
-
+        return "";
     }
 }
