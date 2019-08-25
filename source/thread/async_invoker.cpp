@@ -78,4 +78,11 @@ namespace ffnetwork {
         calling_thread_ == NULL;
     }
 
+    void NotifyingAsyncClosureBase::TriggerCallback() {
+        CriticalScope cs(&crit_);
+        if (!CallbackCanceled() && !callback_.empty()) {
+            invoker_->AsyncInvoke<void>(calling_thread_, callback_);
+        }
+    }
+
 }

@@ -41,7 +41,6 @@ TEST(ThreadTest, Names) {
     delete thread;
 }
 
-
 class CustomThread : public Thread {
 public:
     CustomThread() {}
@@ -94,6 +93,7 @@ struct FunctorA {
         return 41;
     }
 };
+
 class FunctorB {
 public:
     explicit FunctorB(AtomicBool* flag) : flag_(flag) {}
@@ -101,6 +101,7 @@ public:
 private:
     AtomicBool* flag_;
 };
+
 struct FunctorC {
     int operator()() {
         Thread::Current()->ProcessMessages(50);
@@ -226,3 +227,66 @@ protected:
     Event invoke_started_;
     Thread* expected_thread_;
 };
+
+TEST_F(AsyncInvokeTest, WithCallback) {
+    AsyncInvoker invoker;
+    // Create and start the thread.
+    Thread thread;
+    thread.Start();
+    // Try calling functor.
+    SetExpectedThreadForIntCallback(Thread::Current());
+    invoker.AsyncInvoke(&thread, FunctorA(),
+                        &AsyncInvokeTest::IntCallback,
+                        static_cast<AsyncInvokeTest*>(this));
+    EXPECT_EQ_WAIT(41, int_value_, kWaitTimeout);
+}
+
+TEST_F(AsyncInvokeTest, CancelInvoker) {
+    // Create and start the thread.
+    Thread thread;
+    thread.Start();
+    // Try destroying invoker during call.
+    {
+        AsyncInvoker invoker;
+        invoker.AsyncInvoke(&thread, FunctorC(),
+                            &AsyncInvokeTest::IntCallback,
+                            static_cast<AsyncInvokeTest*>(this));
+    }
+    // With invoker gone, callback should be cancelled.
+    Thread::Current()->ProcessMessages(kWaitTimeout);
+    EXPECT_EQ(0, int_value_);
+}
+
+TEST_F(AsyncInvokeTest, CancelCallingThread) {
+    AsyncInvoker invoker;
+    { // Create and start the thread.
+        Thread thread;
+        thread.Start();
+        // Try calling functor.
+        thread.Invoke<void>(std::bind(&AsyncInvokeTest::AsyncInvokeIntCallback,
+                                 static_cast<AsyncInvokeTest*>(this),
+                                 &invoker, Thread::Current()));
+        // Wait for the call to begin.
+        ASSERT_TRUE(invoke_started_.Wait(kWaitTimeout));
+    }
+    // Calling thread is gone. Return message shouldn't happen.
+    Thread::Current()->ProcessMessages(kWaitTimeout);
+    EXPECT_EQ(0, int_value_);
+}
+
+TEST_F(AsyncInvokeTest, KillInvokerBeforeExecute) {
+    Thread thread;
+    thread.Start();
+    {
+        AsyncInvoker invoker;
+        // Try calling functor.
+        thread.Invoke<void>(std::bind(&AsyncInvokeTest::AsyncInvokeIntCallback,
+                                 static_cast<AsyncInvokeTest*>(this),
+                                 &invoker, Thread::Current()));
+        // Wait for the call to begin.
+        ASSERT_TRUE(invoke_started_.Wait(kWaitTimeout));
+    }
+    // Invoker is destroyed. Function should not execute.
+    Thread::Current()->ProcessMessages(kWaitTimeout);
+    EXPECT_EQ(0, int_value_);
+}

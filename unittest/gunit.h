@@ -32,4 +32,13 @@
     if (!res) EXPECT_TRUE(ex); \
   } while (0);
 
+
+#define EXPECT_EQ_WAIT(v1, v2, timeout) \
+  do { \
+    uint32_t start = ffnetwork::NowTimeMillis();    \
+    while (ffnetwork::NowTimeMillis() < start + timeout) { \
+        ffnetwork::Thread::Current()->ProcessMessages(1);   \
+    }\
+    EXPECT_EQ(v1, v2); \
+  } while (0);
 #endif //FFNETWORK_GUNIT_H
