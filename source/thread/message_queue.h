@@ -73,6 +73,14 @@ namespace ffnetwork {
         std::shared_ptr<T> data_;
     };
 
+    template<class T>
+    class DisposeData : public MessageData {
+    public:
+        explicit DisposeData(T* data) : data_(data) { }
+        virtual ~DisposeData() { delete data_; }
+    private:
+        T* data_;
+    };
 
     const uint32_t MQID_ANY = static_cast<uint32_t>(-1);
     const uint32_t MQID_DISPOSE = static_cast<uint32_t>(-2);
@@ -126,6 +134,13 @@ namespace ffnetwork {
         size_t size() const {
             CriticalScope cs(&critical_section_);  // msgq_.size() is not thread safe.
             return msg_queue_.size() + (fPeekKeep_ ? 1u : 0u);
+        }
+
+        // Internally posts a message which causes the doomed object to be deleted
+        template<class T> void Dispose(T* doomed) {
+            if (doomed) {
+                Post(NULL, MQID_DISPOSE, new DisposeData<T>(doomed));
+            }
         }
 
         // When this signal is sent out, any references to this queue should

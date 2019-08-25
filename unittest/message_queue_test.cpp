@@ -8,6 +8,9 @@
 #undef private
 #undef protected
 
+#include "thread/thread.h"
+#include "log/log_macro.h"
+
 using namespace ffnetwork ;
 
 class MessageQueueTest : public testing::Test, public MessageQueue {
@@ -28,3 +31,62 @@ struct DeletedLockChecker {
     bool* was_locked;
     bool* deleted;
 };
+
+TEST_F(MessageQueueTest, DisposeNotLocked) {
+    bool was_locked = true;
+    bool deleted = false;
+    DeletedLockChecker* d = new DeletedLockChecker(this, &was_locked, &deleted);
+    Dispose(d);
+    Message msg;
+    EXPECT_FALSE(Get(&msg, 0));
+    EXPECT_TRUE(deleted);
+    EXPECT_FALSE(was_locked);
+}
+
+class DeletedMessageHandler : public MessageHandler {
+public:
+    explicit DeletedMessageHandler(bool* deleted) : deleted_(deleted) { }
+    ~DeletedMessageHandler() {
+        *deleted_ = true;
+    }
+    void OnMessage(Message* msg) { }
+private:
+    bool* deleted_;
+};
+
+TEST_F(MessageQueueTest, DiposeHandlerWithPostedMessagePending) {
+    bool deleted = false;
+    DeletedMessageHandler *handler = new DeletedMessageHandler(&deleted);
+    // First, post a dispose.
+    Dispose(handler);
+    // Now, post a message, which should *not* be returned by Get().
+    Post(handler, 1);
+    Message msg;
+    EXPECT_FALSE(Get(&msg, 0));
+    EXPECT_TRUE(deleted);
+}
+
+struct UnwrapMainThreadScope {
+    UnwrapMainThreadScope() : rewrap_(Thread::Current() != NULL) {
+        if (rewrap_) ThreadManager::Instance()->UnwrapCurrentThread();
+    }
+    ~UnwrapMainThreadScope() {
+        if (rewrap_) ThreadManager::Instance()->WrapCurrentThread();
+    }
+private:
+    bool rewrap_;
+};
+TEST(MessageQueueManager, Clear) {
+    UnwrapMainThreadScope s;
+    if (MessageQueueManager::IsInitialized()) {
+        LOGD( "Unable to run MessageQueueManager::Clear test, since the \n"
+              "MessageQueueManager was already initialized by some \n"
+              "other test in this run.");
+        return;
+    }
+    bool deleted = false;
+    DeletedMessageHandler* handler = new DeletedMessageHandler(&deleted);
+    delete handler;
+    EXPECT_TRUE(deleted);
+    EXPECT_FALSE(MessageQueueManager::IsInitialized());
+}
