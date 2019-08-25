@@ -4,6 +4,8 @@
 
 #include "async_invoker.h"
 #include "log/log_macro.h"
+#include "async_invoker_inl.h"
+
 #include <functional>
 
 namespace ffnetwork {
@@ -11,6 +13,7 @@ namespace ffnetwork {
     AsyncInvoker::AsyncInvoker() : destroying_(false) {}
     AsyncInvoker::~AsyncInvoker() {
         destroying_ = true;
+        SignalInvokerDestroyed();
         // Messages for this need to be cleared *before* our destructor is complete.
         MessageQueueManager::Clear(this);
     }
@@ -60,5 +63,19 @@ namespace ffnetwork {
 //        thread->PostDelayed(delay_ms,this, id, new SharedMessageData<AsyncClosure>(closure));
     }
 
+    NotifyingAsyncClosureBase::NotifyingAsyncClosureBase(AsyncInvoker *invoker, Thread *calling_thread) :
+            invoker_(invoker), calling_thread_(calling_thread) {
+        calling_thread->SignalQueueDestroyed.connect(this, &NotifyingAsyncClosureBase::CancelCallback);
+        invoker->SignalInvokerDestroyed.connect(this, &NotifyingAsyncClosureBase::CancelCallback);
+    }
+
+    NotifyingAsyncClosureBase::~NotifyingAsyncClosureBase() {
+        disconnect_all();
+    }
+
+    void NotifyingAsyncClosureBase::CancelCallback() {
+        CriticalScope cs(&crit_);
+        calling_thread_ == NULL;
+    }
 
 }

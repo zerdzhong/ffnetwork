@@ -1,6 +1,7 @@
 #ifndef FFNETWORK_MESSAGE_QUEUE_H
 #define FFNETWORK_MESSAGE_QUEUE_H
 
+#include "sigslot/sigslot.hpp"
 #include "message_handler.h"
 #include "critical_section.h"
 #include <cstring>
@@ -126,6 +127,10 @@ namespace ffnetwork {
             CriticalScope cs(&critical_section_);  // msgq_.size() is not thread safe.
             return msg_queue_.size() + (fPeekKeep_ ? 1u : 0u);
         }
+
+        // When this signal is sent out, any references to this queue should
+        // no longer be used.
+        sigslot::signal0<> SignalQueueDestroyed;
 
     protected:
         bool fStop_;

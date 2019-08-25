@@ -1,9 +1,9 @@
 #ifndef FFNETWORK_THREAD_H
 #define FFNETWORK_THREAD_H
 
+#include "message_queue.h"
 #include <pthread.h>
 #include <string>
-#include "message_queue.h"
 #include "event.h"
 
 namespace ffnetwork {

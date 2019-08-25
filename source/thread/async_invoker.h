@@ -37,7 +37,24 @@ namespace ffnetwork {
             DoInvokeDelayed(thread, closure, delay_ms, id);
         }
 
+        // Call |functor| asynchronously on |thread|, calling |callback| when done.
+        template <class ReturnT, class FunctorT, class HostT>
+        void AsyncInvoke(Thread* thread,
+                         const FunctorT& functor,
+                         void (HostT::*callback)(ReturnT),
+                         HostT* callback_host,
+                         uint32_t id = 0) {
+            std::shared_ptr<AsyncClosure> closure(
+                    new NotifyingAsyncClosure<ReturnT, FunctorT, HostT> (
+                            this, Thread::Current(), functor, callback, callback_host));
+            DoInvoke(thread, closure, id);
+        }
+
+
         void Flush(Thread* thread, uint32_t id = MQID_ANY);
+
+        // Signaled when this object is destructed.
+        sigslot::signal0<> SignalInvokerDestroyed;
 
     private:
         void OnMessage(Message* msg) override;

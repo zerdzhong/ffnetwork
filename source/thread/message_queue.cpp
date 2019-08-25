@@ -82,6 +82,9 @@ namespace ffnetwork {
     }
 
     MessageQueue::~MessageQueue() {
+
+        SignalQueueDestroyed();
+
         MessageQueueManager::Remove(this);
         Clear(NULL);
     }

@@ -199,3 +199,30 @@ TEST(ThreadTest, ThreeThreadsInvoke) {
     EXPECT_FALSE(thread_a_called.Get());
     EXPECT_TRUE_WAIT(thread_a_called.Get(), 2000);
 }
+
+class AsyncInvokeTest : public testing::Test {
+public:
+    void IntCallback(int value) {
+        EXPECT_EQ(expected_thread_, Thread::Current());
+        int_value_ = value;
+    }
+    void AsyncInvokeIntCallback(AsyncInvoker* invoker, Thread* thread) {
+        expected_thread_ = thread;
+        invoker->AsyncInvoke(thread, FunctorC(),
+                             &AsyncInvokeTest::IntCallback,
+                             static_cast<AsyncInvokeTest*>(this));
+        invoke_started_.Set();
+    }
+    void SetExpectedThreadForIntCallback(Thread* thread) {
+        expected_thread_ = thread;
+    }
+protected:
+    enum { kWaitTimeout = 1000 };
+    AsyncInvokeTest()
+            : int_value_(0),
+              invoke_started_(true, false),
+              expected_thread_(NULL) {}
+    int int_value_;
+    Event invoke_started_;
+    Thread* expected_thread_;
+};
