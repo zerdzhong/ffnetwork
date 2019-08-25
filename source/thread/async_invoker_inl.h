@@ -92,7 +92,7 @@ namespace ffnetwork {
                               HostT* callback_host)
                 : NotifyingAsyncClosureBase(invoker, calling_thread),
                   functor_(functor) {
-            SetCallback(sigslot::signal0<void>(std::bind(callback, callback_host)));
+            SetCallback(sigslot::signal0<>(std::bind(callback, callback_host)));
         }
         virtual void Execute() {
             functor_();
