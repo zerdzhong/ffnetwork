@@ -12,7 +12,12 @@ set(SOURCE_FILES
         request_impl_test.cpp
         request_test.cpp
         message_queue_test.cpp
-        time_tuils_test.cpp event_test.cpp thread_test.cpp gunit.h)
+        time_tuils_test.cpp 
+        event_test.cpp 
+        thread_test.cpp 
+        gunit.h
+        callback_test.cpp
+        )
 
 add_executable(unittest ${SOURCE_FILES})
 target_link_libraries(unittest gmock_main ffnetwork)
