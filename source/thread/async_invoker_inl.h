@@ -19,7 +19,7 @@ namespace ffnetwork {
         // thread if needed. Should be called from the target thread.
         virtual void Execute() = 0;
     protected:
-        ~AsyncClosure() = default;
+        virtual ~AsyncClosure() = default;
     };
 
     template <class FunctorT>
