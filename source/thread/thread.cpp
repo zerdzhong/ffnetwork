@@ -63,9 +63,9 @@ struct ThreadInit {
 #pragma mark- Thread
 
 Thread::Thread()
-    : running_(true, false)
+    : running_(true, false),
       owned_(true),
-      blocking_calls_allowed_(true),
+      blocking_calls_allowed_(true)
 {
     SetName("ffnetwork-thread", this);  // default name
 }
