@@ -85,4 +85,24 @@ namespace ffnetwork {
         }
     }
 
+
+    GuardedAsyncInvoker::GuardedAsyncInvoker() : thread_(Thread::Current()) {
+        thread_->SignalQueueDestroyed.connect(this,
+                                              &GuardedAsyncInvoker::ThreadDestroyed);
+    }
+    GuardedAsyncInvoker::~GuardedAsyncInvoker() {
+    }
+
+    bool GuardedAsyncInvoker::Flush(uint32_t id) {
+        CriticalScope cs(&crit_);
+        if (thread_ == nullptr)
+            return false;
+        invoker_.Flush(thread_, id);
+        return true;
+    }
+
+    void GuardedAsyncInvoker::ThreadDestroyed() {
+        CriticalScope cs(&crit_);
+        thread_ = nullptr;
+    }
 }
