@@ -1,0 +1,15 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: install cmake
+      run: ./ci/install-linux.sh
+    - name: build
+      run: ./ci/travis.sh
