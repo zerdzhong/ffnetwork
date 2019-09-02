@@ -1,20 +1,19 @@
-version: 2
-
+version: 2.0
 jobs:
-    build:
-        docker:
-            - image: "debain:stretch"
-        setps:
-            - checkout
-            - run:
-                name: Installing SUDO
-                command: 'apt-get update && apt-get install -y sudo && rm -rf /var/lib/apt/lists/*'
-            - run:
-                name: Installing gcc
-                command: 'apt-get update && apt-get install -y gcc g++'
-            - run:
-                name: Install Dependencies
-                command: ./ci/install-linux.sh
-            - run:
-                name: Build & Test
-                command: ./ci/travis.sh
+  build:
+    docker:
+       - image: "debian:stretch"
+    steps:
+        - checkout
+        - run:
+            name: Installing SUDO
+            command: 'apt-get update && apt-get install -y sudo && rm -rf /var/lib/apt/lists/*'
+        - run:
+            name: Installing gcc
+            command: 'apt-get update && apt-get install -y gcc g++'
+        - run:
+            name: Install Dependencies
+            command: ./ci/install-linux.sh
+        - run:
+            name: Build & Test
+            command: ./ci/travis.sh
