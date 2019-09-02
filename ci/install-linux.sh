@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [ "$TRAVIS_OS_NAME" != "linux" ]; then
+if [[ "$OSTYPE" != "linux-gnu" ]]; then
     echo "Not a Linux build; skipping installation"
     exit 0;
 fi
@@ -18,4 +18,5 @@ if ! [ -x "$(command -v cmake)" ]; then
     cd ${TRAVIS_BUILD_DIR}
 fi
 
+sudo apt install -y gcovr
 pip install --user cpp-coveralls
