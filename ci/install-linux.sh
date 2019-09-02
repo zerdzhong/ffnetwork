@@ -18,5 +18,5 @@ if ! [ -x "$(command -v cmake)" ]; then
     cd ${TRAVIS_BUILD_DIR}
 fi
 
-apt install gcovr
+sudo apt install -y gcovr
 pip install --user cpp-coveralls
