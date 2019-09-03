@@ -13,10 +13,11 @@ if ! [ -x "$(command -v cmake)" ]; then
     wget --no-check-certificate https://cmake.org/files/v3.12/cmake-3.12.3-Linux-x86_64.tar.gz
     tar -xvf cmake-3.12.3-Linux-x86_64.tar.gz > /dev/null
     mv cmake-3.12.3-Linux-x86_64 cmake-install
+    cp -r cmake-install/cmake  /usr/local/bin
     PATH=${DEPS_DIR}/cmake-install:${DEPS_DIR}/cmake-install/bin:$PATH
     echo $PATH
     cd ${TRAVIS_BUILD_DIR}
 fi
 
-sudo apt install -y gcovr
+sudo apt install -y gcovr cmake
 pip install --user cpp-coveralls
