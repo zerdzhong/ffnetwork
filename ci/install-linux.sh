@@ -14,6 +14,7 @@ if ! [ -x "$(command -v cmake)" ]; then
     tar -xvf cmake-3.12.3-Linux-x86_64.tar.gz > /dev/null
     mv cmake-3.12.3-Linux-x86_64 cmake-install
     cp cmake-install/bin/* /usr/local/bin
+    cp -r cmake-install/share/* /usr/local/share/
     PATH=${DEPS_DIR}/cmake-install:${DEPS_DIR}/cmake-install/bin:$PATH
     echo $PATH
     cd ${TRAVIS_BUILD_DIR}
