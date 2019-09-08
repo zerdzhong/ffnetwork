@@ -1,14 +1,14 @@
-if(APPLE OR ANDROID)
+#if(APPLE OR ANDROID)
     set(OPENSSL_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/openssl")
 
-endif(APPLE OR ANDROID)
-
-message(STATUS "Finding OpenSSL")
-if(NOT ANDROID)
-    find_package(OpenSSL 1.0.0)
-endif(NOT ANDROID)
-
-if(NOT OPENSSL_FOUND)
+#endif(APPLE OR ANDROID)
+#
+#message(STATUS "Finding OpenSSL")
+#if(NOT ANDROID)
+#    find_package(OpenSSL 1.0.0)
+#endif(NOT ANDROID)
+#
+#if(NOT OPENSSL_FOUND)
 
     execute_process(COMMAND git apply ${CMAKE_CURRENT_SOURCE_DIR}/openssl.patch
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/openssl)
@@ -900,12 +900,15 @@ if(NOT OPENSSL_FOUND)
     target_link_libraries(openssl PUBLIC ${OPENSSL_CRYPTO_LIBRARY})
     set(OPENSSL_LIBRARIES "${OPENSSL_SSL_LIBRARY};${OPENSSL_CRYPTO_LIBRARY}" CACHE INTERNAL "OpenSSL Libraries" FORCE)
     set(OPENSSL_INSTALL_CMAKE_DIR lib/cmake/openssl)
+
+    target_compile_definitions(openssl PRIVATE OPENSSL_NO_STATIC_ENGINE)
     if(ANDROID)
         target_compile_definitions(openssl PRIVATE TIMES=1)
     endif()
-else()
-    message(STATUS "OpenSSL found on system")
-endif()
+
+#else()
+#    message(STATUS "OpenSSL found on system")
+#endif()
 
 
 #config curl

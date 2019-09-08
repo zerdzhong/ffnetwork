@@ -59,6 +59,8 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
     target_compile_definitions(ffnetwork PUBLIC -DDebug)
 endif()
 
+target_link_libraries(ffnetwork PUBLIC libcurl)
+
 target_include_directories(ffnetwork PUBLIC 
     "${FFNETWORK_INCLUDE_DIRECTORY}"
     ${CMAKE_CURRENT_SOURCE_DIR}
