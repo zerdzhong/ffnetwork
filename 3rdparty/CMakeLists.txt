@@ -919,6 +919,7 @@ set(CMAKE_DEBUG_POSTFIX "" CACHE STRING "Override CMAKE_DEBUG_POSTFIX, which cur
 set(BUILD_TESTING OFF CACHE BOOL "Don't build curl tests" FORCE)
 set(BUILD_CURL_EXE OFF CACHE BOOL "Don't build curl executables" FORCE)
 set(CURL_STATICLIB ON CACHE BOOL "Build the curl static library" FORCE)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build the curl static library" FORCE)
 set(CURL_DISABLE_LDAP ON CACHE BOOL "Disable ldap" FORCE)
 set(CURL_CA_FALLBACK ON CACHE BOOL "Use built-in CA" FORCE)
 set(CURL_INSTALL OFF CACHE BOOL "Don't allow cURL to install" FORCE)
