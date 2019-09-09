@@ -3,9 +3,10 @@
 
 #include <ffnetwork/request_task.h>
 #include <ffnetwork/request_task_delegate.h>
+#include <memory>
 
 namespace ffnetwork {
-    class RequestTaskImpl : public RequestTask {
+class RequestTaskImpl : public RequestTask, public std::enable_shared_from_this<RequestTaskImpl> {
     public:
 
         RequestTaskImpl(const std::weak_ptr<RequestTaskDelegate> &delegate,

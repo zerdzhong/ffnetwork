@@ -10,10 +10,16 @@
 #include <ffnetwork/client.h>
 #include <ffnetwork/request_task_delegate.h>
 #include "curl/curl.h"
+#include "thread/thread.h"
+#include <mutex>
+#include <condition_variable>
 
 namespace ffnetwork {
+
     class CurlClient : public Client,
-            public RequestTaskDelegate
+            public RequestTaskDelegate,
+                       public Runnable,
+public std::enable_shared_from_this<CurlClient>
             {
 
         struct HandleInfo {
@@ -30,8 +36,8 @@ namespace ffnetwork {
             HandleInfo();
             ~HandleInfo();
 
-            void configureHeaders();
-            void configureCurlHandle();
+            void ConfigureHeaders();
+            void ConfigureCurlHandle();
         };
 
     public:
@@ -45,14 +51,22 @@ namespace ffnetwork {
                 const std::shared_ptr<Request> &request,
                 std::function<void(const std::shared_ptr<Response> &)> callback) override;
 
-        std::shared_ptr<Response> performRequestSync(const std::shared_ptr<Request> &request) override ;
-
         // RequestTokenDelegate
-        void requestTaskDidCancel(const RequestTask* task) const override;
+        void requestTaskDidCancel(const std::shared_ptr<RequestTask> &task) const override;
+
+        // Runnable
+        void Run(Thread* thread) override;
 
     private:
         CURLM *curl_multi_handle_;
-        std::unordered_map<std::string, std::unique_ptr<HandleInfo>> _handles;
+        std::unordered_map<std::string, std::unique_ptr<HandleInfo>> handles_;
+
+        std::mutex client_mutex_;
+        std::condition_variable new_req_condition_;
+        bool have_new_request_;
+        std::atomic<bool> is_terminated_;
+        Thread request_thread_;
+        void CleanupRequest(std::string hash);
 
     // Curl callbacks
     public:

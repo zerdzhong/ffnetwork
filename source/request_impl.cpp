@@ -1,5 +1,9 @@
 #include "request_impl.h"
 #include <cstring>
+#include <vector>
+#include <sstream>
+
+#include "utils/sha256.h"
 
 namespace ffnetwork {
     RequestImpl::RequestImpl(const std::string &url,
@@ -74,7 +78,30 @@ namespace ffnetwork {
     }
 
     std::string RequestImpl::hash() const {
-        return "";
+        // Support "Vary" headers
+        std::vector<std::string> excluded_headers;
+        const auto &vary_iterator = headers_.find("Vary");
+        if (vary_iterator != headers_.end()) {
+            std::istringstream ss((*vary_iterator).second);
+            std::string token;
+            while (std::getline(ss, token, ',')) {
+                token.erase(remove_if(token.begin(), token.end(), isspace), token.end());
+                excluded_headers.push_back(token);
+            }
+        }
+
+        std::string amalgamation = url();
+        for (const auto &header_pair : headers_) {
+            if (std::find(excluded_headers.begin(), excluded_headers.end(), header_pair.first) !=
+                excluded_headers.end()) {
+                continue;
+            }
+            amalgamation += header_pair.first + header_pair.second;
+        }
+        if (data_ != nullptr) {
+            amalgamation.append((const char *)data_, data_length_);
+        }
+        return sha256(amalgamation);
     }
         
     std::string RequestImpl::serialise() const {

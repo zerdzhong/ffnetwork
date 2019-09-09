@@ -284,7 +284,7 @@ bool Thread::WrapCurrentWithThreadManager(ThreadManager* thread_manager,
     }
 
     bool Thread::PopSendMessageFromThread(const Thread *source, _SendMessage *msg) {
-        CriticalScope sc(&critical_section_);
+        CriticalScope cs(&critical_section_);
 
         for (auto it = send_list_.begin();
              it != send_list_.end(); ++it) {

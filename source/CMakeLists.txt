@@ -27,6 +27,8 @@ set(SOURCE_FILES
         thread/thread.cpp
         utils/time_utils.h
         utils/time_utils.cpp
+        utils/sha256.h
+        utils/sha256.cpp
         thread/event.cpp
         thread/event.h
         thread/async_invoker.cpp
@@ -34,7 +36,7 @@ set(SOURCE_FILES
         construct_macro.h
         thread/async_invoker_inl.h
         sigslot/sigslot.hpp
-        thread/callback.h)
+        thread/callback.h ../include/ffnetwork/response_impl.h response_impl.cpp)
 
 add_library(ffnetwork 
     "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/client.h"
