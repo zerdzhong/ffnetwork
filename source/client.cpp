@@ -1,4 +1,5 @@
 #include <ffnetwork/client.h>
+#include <atomic>
 #include "curl_client.h"
 
 namespace ffnetwork {

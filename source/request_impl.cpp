@@ -2,6 +2,8 @@
 #include <cstring>
 #include <vector>
 #include <sstream>
+#include <algorithm>
+#include <cstring>
 
 #include "utils/sha256.h"
 

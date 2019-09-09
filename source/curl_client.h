@@ -12,6 +12,7 @@
 #include "curl/curl.h"
 #include "thread/thread.h"
 #include <mutex>
+#include <atomic>
 #include <condition_variable>
 
 namespace ffnetwork {

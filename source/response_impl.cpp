@@ -3,6 +3,7 @@
 //
 
 #include <ffnetwork/response_impl.h>
+#include <cstring>
 
 namespace ffnetwork {
 
