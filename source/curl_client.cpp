@@ -44,6 +44,7 @@ namespace ffnetwork {
         ConfigCurlGlobalState(true);
         curl_multi_handle_ = curl_multi_init();
         curl_multi_setopt(curl_multi_handle_, CURLMOPT_MAXCONNECTS, MAX_CONNECTIONS);
+        request_thread_.SetName("CurlClient", this);
         request_thread_.Start(this);
     }
 
