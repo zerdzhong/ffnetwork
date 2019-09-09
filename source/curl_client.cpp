@@ -151,6 +151,7 @@ namespace ffnetwork {
                             request, data, data_length, StatusCode(status_code), false);
 
                     auto &response_headers = new_response->headerMap();
+                    response_headers = std::move(handle_info->response_headers);
 
                     // Save callback before cleanup
                     auto cb = handle_info->callback;
@@ -215,11 +216,28 @@ namespace ffnetwork {
 
 #pragma mark- CurlCallback
     size_t CurlClient::write_callback(char *data, size_t size, size_t nitems, void *str) {
-        return 0;
+        auto* string_buffer = static_cast<std::string *>(str);
+        if(string_buffer == nullptr) {
+            return 0;
+        }
+        string_buffer->append(data, size * nitems);
+        return size * nitems;
     }
 
     size_t CurlClient::header_callback(char *data, size_t size, size_t nitems, void *str) {
-        return 0;
+        auto headers = reinterpret_cast<std::unordered_map<std::string, std::string> *>(str);
+        std::string header(data, size * nitems), key, value;
+        size_t pos;
+        if ((pos = header.find(":")) != std::string::npos) {
+            key = header.substr(0, pos);
+            value = header.substr(std::min(pos + 2, header.length()));
+        }
+
+        if (!key.empty()) {
+            (*headers)[key] = value;
+        }
+
+        return size*nitems;
     }
 
 #pragma mark- HandleInfo
