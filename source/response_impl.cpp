@@ -33,19 +33,20 @@ namespace ffnetwork {
     }
 
     const std::shared_ptr<Request> ResponseImpl::request() const {
-        return std::shared_ptr<Request>();
+        return request_;
     }
 
     const unsigned char *ResponseImpl::data(size_t &data_length) const {
-        return nullptr;
+        data_length = data_length_;
+        return data_;
     }
 
     StatusCode ResponseImpl::statusCode() const {
-        return StatusCodeTemporaryRedirect;
+        return status_code_;
     }
 
     bool ResponseImpl::cancelled() const {
-        return false;
+        return cancelled_;
     }
 
     std::string ResponseImpl::operator[](const std::string &header_name) const {

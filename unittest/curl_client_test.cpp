@@ -22,5 +22,8 @@ TEST(CurlClientTests, request) {
 
     auto response = client->performRequestSync(request);
     EXPECT_NE(response.get(), nullptr);
+    EXPECT_EQ(response->request()->headerMap().size(), 2);
+    EXPECT_EQ(response->request()->headerMap()["Range"], "0-");
+    EXPECT_EQ(response->request()->headerMap()["User-Agent"], "test_ua");
 }
 
