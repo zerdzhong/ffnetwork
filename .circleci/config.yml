@@ -19,4 +19,4 @@ jobs:
             command: ./ci/install-linux.sh
         - run:
             name: Build & Test
-            command: ./ci/travis.sh
+            command: ./ci/unittest.sh

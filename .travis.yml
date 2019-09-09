@@ -28,7 +28,7 @@ before_install:
 install:
   - ./ci/install-${TRAVIS_OS_NAME}.sh
 
-script: ./ci/travis.sh
+script: ./ci/unittest.sh
 
 addons:
   apt:
