@@ -5,14 +5,14 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(SOURCE_FILES
-        client.cpp
-        request.cpp
-        request_impl.h
-        request_impl.cpp
-        request_task_impl.h
-        request_task_impl.cpp
-        curl_client.h
-        curl_client.cpp
+        net/client.cpp
+        net/request.cpp
+        net/request_impl.h
+        net/request_impl.cpp
+        net/request_task_impl.h
+        net/request_task_impl.cpp
+        net/curl_client.h
+        net/curl_client.cpp
         log/logger.h
         log/logger.cpp
         log/log_macro.h
@@ -33,10 +33,10 @@ set(SOURCE_FILES
         thread/event.h
         thread/async_invoker.cpp
         thread/async_invoker.h
-        construct_macro.h
+        utils/construct_macro.h
         thread/async_invoker_inl.h
         sigslot/sigslot.hpp
-        thread/callback.h ../include/ffnetwork/response_impl.h response_impl.cpp)
+        thread/callback.h ../include/ffnetwork/response_impl.h net/response_impl.cpp)
 
 add_library(ffnetwork 
     "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/client.h"

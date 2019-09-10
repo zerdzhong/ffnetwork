@@ -4,8 +4,8 @@ namespace ffnetwork {
     RequestTaskImpl::RequestTaskImpl(const std::weak_ptr<RequestTaskDelegate> &delegate,
                                      const std::string &identifier) :
             cancelled_(false),
-            delegate_(delegate),
-            identifier_(identifier)
+            identifier_(identifier),
+            delegate_(delegate)
     {
 
     }
