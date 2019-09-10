@@ -143,9 +143,9 @@ namespace ffnetwork {
                     const unsigned char *data = (const unsigned char *)handle_info->response.c_str();
                     size_t data_length = handle_info->response.size();
 
-                    LOGD("Got response for: %s\n", request->url().c_str());
-                    LOGD("Response code: %lu\n", status_code);
-                    LOGD("Response size: %lu\n", data_length);
+                    LOGD("Got response for: %s", request->url().c_str());
+                    LOGD("Response code: %lu", status_code);
+                    LOGD("Response size: %lu", data_length);
 
                     std::shared_ptr<Response> new_response = std::make_shared<ResponseImpl>(
                             request, data, data_length, StatusCode(status_code), false);

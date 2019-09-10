@@ -4,7 +4,7 @@ project(ffnetwork)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(SOURCE_FILES
+set(FFNETWORK_SOURCE_FILES
         net/client.cpp
         net/request.cpp
         net/request_impl.h
@@ -36,16 +36,25 @@ set(SOURCE_FILES
         utils/construct_macro.h
         thread/async_invoker_inl.h
         sigslot/sigslot.hpp
-        thread/callback.h ../include/ffnetwork/response_impl.h net/response_impl.cpp)
+        thread/callback.h
+        net/response_impl.cpp)
 
-add_library(ffnetwork 
-    "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/client.h"
-    "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/request_task.h"
-    "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/request_task_delegate.h"
-    "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/request.h"
-    "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/response.h"
-    ${SOURCE_FILES}
-)
+
+set(FFNETWORK_HEADER_FILES
+        "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/client.h"
+        "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/request_task.h"
+        "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/request_task_delegate.h"
+        "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/request.h"
+        "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/response.h"
+        "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/response_impl.h"
+        )
+
+add_library(ffnetwork ${FFNETWORK_SOURCE_FILES} ${FFNETWORK_HEADER_FILES})
+
+if (CMAKE_GENERATOR MATCHES Xcode)
+    include(XcodeSourceGroup)
+    SOURCE_GROUP_BY_FOLDER(FFNETWORK)
+endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     target_compile_definitions(ffnetwork PRIVATE WIN)
