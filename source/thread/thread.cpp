@@ -79,8 +79,8 @@ bool Thread::SetName(const std::string& name, const void* obj) {
     if (running()) return false;
     name_ = name;
     if (obj) {
-        char buf[16];
-        sprintf(buf, " 0x%p", obj);
+        char buf[16] = {0};
+        snprintf(buf, sizeof(buf)," 0x%p", obj);
         name_ += buf;
     }
 

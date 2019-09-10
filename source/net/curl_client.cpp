@@ -113,7 +113,7 @@ namespace ffnetwork {
 
         std::unique_lock<std::mutex> client_lock(client_mutex_);
 
-        while (true) {
+        while (!thread->IsQuitting()) {
             // launch any waiting requests
             curl_multi_perform(curl_multi_handle_, &active_requests);
 
