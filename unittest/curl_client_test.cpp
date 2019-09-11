@@ -8,19 +8,19 @@
 using namespace ffnetwork;
 
 TEST(CurlClientTests, create) {
-    auto client = createClient();
+    auto client = CreateClient();
     EXPECT_NE((void *)0, client.get());
 }
 
 TEST(CurlClientTests, request) {
-    auto client = createClient();
+    auto client = CreateClient();
     EXPECT_NE((void *)0, client.get());
 
     auto url = "https://github.com";
     std::unordered_map<std::string, std::string> header = {{"Range","0-"}, {"User-Agent","test_ua"}};
-    auto request = createRequest(url, header);
+    auto request = CreateRequest(url, header);
 
-    auto response = client->performRequestSync(request);
+    auto response = client->PerformRequestSync(request);
     EXPECT_NE(response.get(), nullptr);
     EXPECT_EQ(response->request()->headerMap().size(), 2);
     EXPECT_EQ(response->request()->headerMap()["Range"], "0-");

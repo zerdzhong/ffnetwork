@@ -13,6 +13,6 @@ namespace ffnetwork {
         virtual void cancel() = 0;
         virtual bool cancelled() = 0;
     };
-}// end of namespcae ffnetwork
+}// end of namespace ffnetwork
 
 #endif

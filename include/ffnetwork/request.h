@@ -30,10 +30,10 @@ namespace ffnetwork {
     
     };
 
-    extern std::shared_ptr<Request> createRequest(
+    extern std::shared_ptr<Request> CreateRequest(
         const std::string &url, 
         const std::unordered_map<std::string, std::string> &header_map);
-    extern std::shared_ptr<Request> createRequest(const std::shared_ptr<Request> &request);
+    extern std::shared_ptr<Request> CreateRequest(const std::shared_ptr<Request> &request);
 
 }// end of namespace ffnetwork
 

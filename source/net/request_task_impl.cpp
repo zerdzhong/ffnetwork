@@ -21,7 +21,7 @@ namespace ffnetwork {
     void RequestTaskImpl::cancel() {
         cancelled_ = true;
         if (auto delegate = delegate_.lock()) {
-            delegate->requestTaskDidCancel(shared_from_this());
+            delegate->RequestTaskDidCancel(shared_from_this());
         }
     }
 

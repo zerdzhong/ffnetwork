@@ -34,7 +34,7 @@ namespace {
 
 namespace ffnetwork {
 
-    std::shared_ptr<Client> createCurlClient() {
+    std::shared_ptr<Client> CreateCurlClient() {
         auto curl_client = std::make_shared<CurlClient>();
         return curl_client;
     }
@@ -72,7 +72,7 @@ namespace ffnetwork {
 
 #pragma mark- public_method
 
-    std::shared_ptr<RequestTask> CurlClient::performRequest(const std::shared_ptr<Request> &request, std::function<void(
+    std::shared_ptr<RequestTask> CurlClient::PerformRequest(const std::shared_ptr<Request> &request, std::function<void(
             const std::shared_ptr<Response> &)> callback) {
 
         std::unique_lock<std::mutex> client_lock(client_mutex_);
@@ -93,7 +93,7 @@ namespace ffnetwork {
         return request_task;
     }
 
-    void CurlClient::requestTaskDidCancel(const std::shared_ptr<RequestTask> &task) const {
+    void CurlClient::RequestTaskDidCancel(const std::shared_ptr<RequestTask> &task) const {
 
     }
 
@@ -148,7 +148,7 @@ namespace ffnetwork {
                     LOGD("Response size: %lu", data_length);
 
                     std::shared_ptr<Response> new_response = std::make_shared<ResponseImpl>(
-                            request, data, data_length, StatusCode(status_code), false);
+                            request, data, data_length, HttpStatusCode(status_code), false);
 
                     auto &response_headers = new_response->headerMap();
                     response_headers = std::move(handle_info->response_headers);

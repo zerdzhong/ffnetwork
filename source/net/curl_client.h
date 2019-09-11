@@ -48,12 +48,12 @@ public std::enable_shared_from_this<CurlClient>
         static const long MAX_CONNECTIONS = 10;
 
         // Client
-        std::shared_ptr<RequestTask> performRequest(
+        std::shared_ptr<RequestTask> PerformRequest(
                 const std::shared_ptr<Request> &request,
                 std::function<void(const std::shared_ptr<Response> &)> callback) override;
 
         // RequestTokenDelegate
-        void requestTaskDidCancel(const std::shared_ptr<RequestTask> &task) const override;
+        void RequestTaskDidCancel(const std::shared_ptr<RequestTask> &task) const override;
 
         // Runnable
         void Run(Thread* thread) override;
@@ -75,7 +75,7 @@ public std::enable_shared_from_this<CurlClient>
         static size_t header_callback(char *data, size_t size, size_t nitems, void *str);
     };
 
-    extern std::shared_ptr<Client> createCurlClient();
+    extern std::shared_ptr<Client> CreateCurlClient();
 }
 
 

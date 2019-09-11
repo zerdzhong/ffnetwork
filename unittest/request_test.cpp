@@ -17,12 +17,12 @@ using namespace ffnetwork;
 TEST(RequestTest, basic) {
     auto url = "https://github.com";
     std::unordered_map<std::string, std::string> header = {{"Range","0-"}, {"User-Agent","test_ua"}};
-    auto request = createRequest(url, header);
+    auto request = CreateRequest(url, header);
     
     GTEST_ASSERT_EQ(request->url(), url);
     GTEST_ASSERT_EQ(request->headerMap(), header);
 
-    auto request_dup = createRequest(request);
+    auto request_dup = CreateRequest(request);
     GTEST_ASSERT_EQ(request_dup->url(), url);
     GTEST_ASSERT_EQ(request_dup->headerMap(), header);
 }

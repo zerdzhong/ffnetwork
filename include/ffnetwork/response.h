@@ -8,21 +8,21 @@
 namespace ffnetwork {
 
 
-    typedef enum : int {
+    enum class HttpStatusCode : int {
         StatusCodeInvalid = 0,
         // Informational
-                StatusCodeContinue = 100,
+        StatusCodeContinue = 100,
         StatusCodeSwitchProtocols = 101,
         // Successful
-                StatusCodeOK = 200,
+        StatusCodeOK = 200,
         StatusCodeCreated = 201,
         StatusCodeAccepted = 202,
-        StatusCodeNonAuthoritiveInformation = 203,
+        StatusCodeNonAuthoritativeInformation = 203,
         StatusCodeNoContent = 204,
         StatusCodeResetContent = 205,
         StatusCodePartialContent = 206,
         // Redirection
-                StatusCodeMovedMultipleChoices = 300,
+        StatusCodeMovedMultipleChoices = 300,
         StatusCodeMovedPermanently = 301,
         StatusCodeFound = 302,
         StatusCodeSeeOther = 303,
@@ -31,7 +31,7 @@ namespace ffnetwork {
         StatusCodeUnused = 306,
         StatusCodeTemporaryRedirect = 307,
         // Client Error
-                StatusCodeBadRequest = 400,
+        StatusCodeBadRequest = 400,
         StatusCodeUnauthorised = 401,
         StatusCodePaymentRequired = 402,
         StatusCodeForbidden = 403,
@@ -56,14 +56,14 @@ namespace ffnetwork {
         StatusCodeServiceUnavailable = 503,
         StatusCodeGatewayTimeout = 504,
         StatusCodeHTTPVersionNotSupported = 505
-    } StatusCode;
+    } ;
 
     class Response {
     public:
 
         virtual const std::shared_ptr<Request> request() const = 0;
         virtual const unsigned char *data(size_t &data_length) const = 0;
-        virtual StatusCode statusCode() const = 0;
+        virtual HttpStatusCode statusCode() const = 0;
         virtual bool cancelled() const = 0;
         virtual std::string serialise() const = 0;
         virtual std::string operator[](const std::string &header_name) const = 0;

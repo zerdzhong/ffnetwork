@@ -16,7 +16,7 @@ namespace ffnetwork {
         ResponseImpl(const std::shared_ptr<Request> &request,
                                const unsigned char *data,
                                size_t data_length,
-                               StatusCode status_code,
+                               HttpStatusCode status_code,
                                bool cancelled);
         ResponseImpl(const std::string &serialised,
                                const unsigned char *data,
@@ -27,7 +27,7 @@ namespace ffnetwork {
         // Response
         const std::shared_ptr<Request> request() const override;
         const unsigned char *data(size_t &data_length) const override;
-        StatusCode statusCode() const override;
+        HttpStatusCode statusCode() const override;
         bool cancelled() const override;
         std::string serialise() const override;
         std::unordered_map<std::string, std::string> metadata() const override;
@@ -42,7 +42,7 @@ namespace ffnetwork {
         std::shared_ptr<Request> request_;
         unsigned char *data_;
         const size_t data_length_;
-        StatusCode status_code_;
+        HttpStatusCode status_code_;
         const bool cancelled_;
         std::unordered_map<std::string, std::string> headers_;
         std::unordered_map<std::string, std::string> metadata_;

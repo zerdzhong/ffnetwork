@@ -14,14 +14,14 @@ namespace ffnetwork {
         public:
         virtual ~Client();
 
-        virtual std::shared_ptr<RequestTask> performRequest(
+        virtual std::shared_ptr<RequestTask> PerformRequest(
             const std::shared_ptr<Request> &request,
             std::function<void(const std::shared_ptr<Response> &)> callback) = 0;
 
-        virtual std::shared_ptr<Response> performRequestSync(const std::shared_ptr<Request> &request);
+        virtual std::shared_ptr<Response> PerformRequestSync(const std::shared_ptr<Request> &request);
     };
 
-    extern std::shared_ptr<Client> createClient();
+    extern std::shared_ptr<Client> CreateClient();
 }// namespace ffnetwork
 
 #endif

@@ -8,7 +8,7 @@
 namespace ffnetwork {
 
     ResponseImpl::ResponseImpl(const std::shared_ptr<Request> &request, const unsigned char *data, size_t data_length,
-                               StatusCode status_code, bool cancelled) :
+                               HttpStatusCode status_code, bool cancelled) :
     request_(request),
     data_(data_length == 0 ? nullptr : (unsigned char *)malloc(data_length)),
     data_length_(data_length),
@@ -23,7 +23,7 @@ namespace ffnetwork {
                                const std::shared_ptr<Response> &response) :
             data_(data_length == 0 ? nullptr : (unsigned char *)malloc(data_length)),
             data_length_(data_length),
-            status_code_(StatusCodeInvalid),
+            status_code_(HttpStatusCode::StatusCodeInvalid),
             cancelled_(false) {
 
     }
@@ -41,7 +41,7 @@ namespace ffnetwork {
         return data_;
     }
 
-    StatusCode ResponseImpl::statusCode() const {
+    HttpStatusCode ResponseImpl::statusCode() const {
         return status_code_;
     }
 

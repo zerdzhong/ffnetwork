@@ -7,12 +7,12 @@ namespace ffnetwork {
 
     }
 
-    std::shared_ptr<Response> Client::performRequestSync(const std::shared_ptr<Request> &request) {
+    std::shared_ptr<Response> Client::PerformRequestSync(const std::shared_ptr<Request> &request) {
         std::mutex mutex;
         std::condition_variable cv;
         std::atomic<bool> response_ready(false);
         std::shared_ptr<Response> output_response = nullptr;
-        performRequest(request, [&](const std::shared_ptr<Response> &response) {
+        PerformRequest(request, [&](const std::shared_ptr<Response> &response) {
             {
                 std::lock_guard<std::mutex> lock(mutex);
                 output_response = response;
@@ -27,8 +27,8 @@ namespace ffnetwork {
         return output_response;
     }
 
-    std::shared_ptr<Client> createClient() {
-        return createCurlClient();
+    std::shared_ptr<Client> CreateClient() {
+        return CreateCurlClient();
     }
 
 }
