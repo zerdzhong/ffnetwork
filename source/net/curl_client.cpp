@@ -40,7 +40,7 @@ namespace ffnetwork {
     }
 
 #pragma mark- CurlClient
-    CurlClient::CurlClient() : have_new_request_(false), is_terminated_(false) {
+    CurlClient::CurlClient() : have_new_request_(false), is_terminated_(false), use_multi_wait_(true){
         ConfigCurlGlobalState(true);
         curl_multi_handle_ = curl_multi_init();
         curl_multi_setopt(curl_multi_handle_, CURLMOPT_MAXCONNECTS, MAX_CONNECTIONS);
@@ -97,111 +97,29 @@ namespace ffnetwork {
 
     }
 
-#pragma mark- private_method
-    void CurlClient::CleanupRequest(std::string hash) {
-        handles_.erase(hash);
-    }
 
 #pragma mark- run_entry
 
     void CurlClient::Run(Thread *thread) {
-        CURLMsg *msg;
-        long timeout_ms = 0;
-        int max_fd, message_in_queue, active_requests = -1;
-        fd_set R, W, E;
-        struct timeval T;
 
         std::unique_lock<std::mutex> client_lock(client_mutex_);
 
+        int active_requests = -1;
+
         while (!thread->IsQuitting()) {
-            // launch any waiting requests
             curl_multi_perform(curl_multi_handle_, &active_requests);
 
-            // read any messages that are ready
-            size_t msg_count = 0;
-
-            while ((msg = curl_multi_info_read(curl_multi_handle_, &message_in_queue))) {
-                ++msg_count;
-
-                if (msg->msg == CURLMSG_DONE) {
-                    std::string *request_hash;
-                    CURL *handle = msg->easy_handle;
-
-                    curl_easy_getinfo(handle, CURLINFO_PRIVATE, &request_hash);
-
-                    // TODO retry?
-                    if (msg->data.result == CURLE_OPERATION_TIMEDOUT) {
-                    }
-
-                    // make response to send to callback
-                    long status_code = 0;
-                    curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &status_code);
-
-                    // Look up response data and original request
-                    HandleInfo *handle_info = handles_[*request_hash].get();
-                    const std::shared_ptr<Request> request = handle_info->request;
-                    const unsigned char *data = (const unsigned char *)handle_info->response.c_str();
-                    size_t data_length = handle_info->response.size();
-
-                    LOGD("Got response for: %s", request->url().c_str());
-                    LOGD("Response code: %lu", status_code);
-                    LOGD("Response size: %lu", data_length);
-
-                    std::shared_ptr<Response> new_response = std::make_shared<ResponseImpl>(
-                            request, data, data_length, HttpStatusCode(status_code), false);
-
-                    auto &response_headers = new_response->headerMap();
-                    response_headers = std::move(handle_info->response_headers);
-
-                    // Save callback before cleanup
-                    auto cb = handle_info->callback;
-                    curl_multi_remove_handle(curl_multi_handle_, handle);
-                    CleanupRequest(*request_hash);
-
-                    if (cb) {
-                        // Release lock before calling callback In case callback add new request
-                        client_lock.unlock();
-                        cb(new_response);
-                        client_lock.lock();
-                    }
-                } else {
-                    LOGE("CURLMsg (%d)\n", msg->msg);
-                }
-            }
-
-            if (msg_count) {
+            if (HandleCurlMsg()) {
                 continue;
             }
 
             if (active_requests > 0) {
-                FD_ZERO(&R);
-                FD_ZERO(&W);
-                FD_ZERO(&E);
-
-                if (curl_multi_fdset(curl_multi_handle_, &R, &W, &E, &max_fd)) {
-                    LOGE("E: curl_multi_fdset\n");
-                }
-
-                if (curl_multi_timeout(curl_multi_handle_, &timeout_ms)) {
-                    LOGE("E: curl_multi_timeout\n");
-                }
-
-                if (timeout_ms == -1) timeout_ms = 100;
-
-                if (max_fd == -1) {
-                    client_lock.unlock();
-                    usleep((unsigned long)timeout_ms);
-                    client_lock.lock();
+                if (use_multi_wait_) {
+                    WaitMulti(1000);
                 } else {
-                    T.tv_sec = timeout_ms / 1000;
-                    T.tv_usec = (timeout_ms % 1000) * 1000;
-
-                    if (0 > select(max_fd + 1, &R, &W, &E, &T)) {
-                        LOGE("E: select(%i,,,,%li): %i: %s\n", max_fd + 1, timeout_ms, errno, strerror(errno));
-                    }
+                    WaitFD(1000);
                 }
             } else {
-                // If there are no active requests, wait on condition variable
                 have_new_request_ = false;
                 new_req_condition_.wait(client_lock, [this]() {
                     return (have_new_request_ || is_terminated_);
@@ -214,7 +132,116 @@ namespace ffnetwork {
         }
     }
 
+#pragma mark- private_method
+
+    void CurlClient::CleanupRequest(const std::string& hash) {
+        handles_.erase(hash);
+    }
+
+
+    bool CurlClient::HandleCurlMsg() {
+
+        CURLMsg *msg;
+        int message_in_queue = -1;
+
+        size_t msg_count = 0;
+
+        while ((msg = curl_multi_info_read(curl_multi_handle_, &message_in_queue))) {
+            ++msg_count;
+
+            if (msg->msg == CURLMSG_DONE) {
+
+                std::string *request_hash;
+                CURL *handle = msg->easy_handle;
+
+                curl_easy_getinfo(handle, CURLINFO_PRIVATE, &request_hash);
+
+                // TODO retry?
+                if (msg->data.result == CURLE_OPERATION_TIMEDOUT) {
+                }
+
+                // make response to send to callback
+                long status_code = 0;
+                curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &status_code);
+
+                // Look up response data and original request
+                HandleInfo *handle_info = handles_[*request_hash].get();
+                const std::shared_ptr<Request> request = handle_info->request;
+                const unsigned char *data = (const unsigned char *) handle_info->response.c_str();
+                size_t data_length = handle_info->response.size();
+
+                LOGD("Got response for: %s", request->url().c_str());
+                LOGD("Response code: %lu", status_code);
+                LOGD("Response size: %lu", data_length);
+
+                std::shared_ptr<Response> new_response = std::make_shared<ResponseImpl>(
+                        request, data, data_length, HttpStatusCode(status_code), false);
+
+                auto &response_headers = new_response->headerMap();
+                response_headers = std::move(handle_info->response_headers);
+
+                // Save callback before cleanup
+                auto cb = handle_info->callback;
+                curl_multi_remove_handle(curl_multi_handle_, handle);
+                CleanupRequest(*request_hash);
+
+                if (cb) {
+                    cb(new_response);
+                }
+            } else {
+                LOGE("CURLMsg (%d)\n", msg->msg);
+            }
+        }
+
+        return msg_count > 0;
+    }
+
+    void CurlClient::WaitMulti(long timeout_ms) {
+        int num_fds = -1;
+        int res = curl_multi_wait(curl_multi_handle_, NULL, 0, timeout_ms, &num_fds);
+        if(res != CURLM_OK) {
+            LOGE("curl_multi_wait not ok (%d)\n", res);
+        }
+    }
+
+    void CurlClient::WaitFD(long timeout_ms) {
+        int max_fd = -1;
+        long wait_time = -1;
+        struct timeval T;
+
+        fd_set R, W, E;
+
+        FD_ZERO(&R);
+        FD_ZERO(&W);
+        FD_ZERO(&E);
+
+        if (curl_multi_fdset(curl_multi_handle_, &R, &W, &E, &max_fd)) {
+            LOGE("E: curl_multi_fdset\n");
+        }
+
+        if (curl_multi_timeout(curl_multi_handle_, &wait_time)) {
+            LOGE("E: curl_multi_timeout\n");
+        }
+
+        if (wait_time == -1) {
+            wait_time = timeout_ms;
+        }
+
+        if (max_fd == -1) {
+            usleep((unsigned long)wait_time);
+        } else {
+            T.tv_sec = wait_time / 1000;
+            T.tv_usec = (wait_time % 1000) * 1000;
+
+            if (0 > select(max_fd + 1, &R, &W, &E, &T)) {
+                LOGE("E: select(%i,,,,%li): %i: %s\n", max_fd + 1, wait_time, errno, strerror(errno));
+            }
+        }
+    }
+
+
 #pragma mark- CurlCallback
+
     size_t CurlClient::write_callback(char *data, size_t size, size_t nitems, void *str) {
         auto* string_buffer = static_cast<std::string *>(str);
         if(string_buffer == nullptr) {

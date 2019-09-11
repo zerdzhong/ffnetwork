@@ -67,7 +67,14 @@ public std::enable_shared_from_this<CurlClient>
         bool have_new_request_;
         std::atomic<bool> is_terminated_;
         Thread request_thread_;
-        void CleanupRequest(std::string hash);
+
+        bool use_multi_wait_;
+
+        void CleanupRequest(const std::string& hash);
+
+        void WaitMulti(long timeout_ms);
+        void WaitFD(long timeout_ms);
+        bool HandleCurlMsg();
 
     // Curl callbacks
     public:
