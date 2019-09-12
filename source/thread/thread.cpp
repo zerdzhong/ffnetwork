@@ -156,8 +156,9 @@ bool Thread::ProcessMessages(int cmsLoop) {
     int cmsNext = cmsLoop;
     while (true) {
         Message msg;
-        if (!Get(&msg, cmsNext))
+        if (!Get(&msg, cmsNext)) {
             return !IsQuitting();
+        }
         Dispatch(&msg);
         if (cmsLoop != kForever) {
             cmsNext = TimeUntil(msEnd);

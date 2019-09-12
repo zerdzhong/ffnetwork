@@ -47,13 +47,10 @@ static pthread_mutex_t gCommonLogMutex = PTHREAD_MUTEX_INITIALIZER;
             return;
         }
 
-        ::std::stringstream __ss__;
+        std::stringstream __ss__;
 #if ANDROID
         __ss__<<"["<<log_tag<<"]["<<module_tag<<"]";
         int __prio__ = get_android_log_priority(level);
-
-        char buf[1024] = {0};
-        vsnprintf(buf, 1023, format, args);
 
         __android_log_vprint(__prio__, __ss__.str().c_str(), format, args);
 #else
@@ -71,17 +68,10 @@ static pthread_mutex_t gCommonLogMutex = PTHREAD_MUTEX_INITIALIZER;
 
         __ss__ << date_str << " " << time_str << "." << ms_str << " [" << log_tag << "]:" << "[" << module_tag << "]:";
 
-        auto temp = std::vector<char> {};
-        auto length = std::size_t {63};
-        while (temp.size() <= length) {
-            temp.resize(length + 1);
-            const auto status = std::vsnprintf(temp.data(), temp.size(), format, args);
-            if (status < 0)
-                throw std::runtime_error {"string formatting error"};
-            length = static_cast<std::size_t>(status);
-        }
+        char buf[1024] = {0};
+        vsnprintf(buf, 1023, format, args);
 
-        __ss__<<temp.data()<<"\n";
+        __ss__<< buf <<"\n";
         printf("%s", __ss__.str().c_str());
         pthread_mutex_unlock(&gCommonLogMutex);
 #endif

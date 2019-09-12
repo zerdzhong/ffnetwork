@@ -90,12 +90,15 @@ namespace ffnetwork {
     }
 
     void MessageQueue::Quit() {
+        CriticalScope cs(&critical_section_);
         fStop_ = true;
     }
     bool MessageQueue::IsQuitting() {
+        CriticalScope cs(&critical_section_);
         return fStop_;
     }
     void MessageQueue::Restart() {
+        CriticalScope cs(&critical_section_);
         fStop_ = false;
     }
 
@@ -154,7 +157,7 @@ namespace ffnetwork {
                 return true;
             }
 
-            if (fStop_) {
+            if (IsQuitting()) {
                 break;
             }
 
@@ -187,7 +190,7 @@ namespace ffnetwork {
                         uint32_t id,
                         MessageData* pdata,
                         bool time_sensitive) {
-        if (fStop_) {
+        if (IsQuitting()) {
             return;
         }
         // Keep thread safe

@@ -74,6 +74,8 @@ namespace ffnetwork {
 
     std::shared_ptr<RequestTask> CurlClient::PerformRequest(const std::shared_ptr<Request> &request, std::function<void(
             const std::shared_ptr<Response> &)> callback) {
+        
+        LOGD("PerformRequest url:%s", request->url().c_str());
 
         std::unique_lock<std::mutex> client_lock(client_mutex_);
         std::string request_hash = request->hash();
@@ -115,9 +117,9 @@ namespace ffnetwork {
 
             if (active_requests > 0) {
                 if (use_multi_wait_) {
-                    WaitMulti(1000);
+                    WaitMulti(100);
                 } else {
-                    WaitFD(1000);
+                    WaitFD(100);
                 }
             } else {
                 have_new_request_ = false;
