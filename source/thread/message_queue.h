@@ -6,6 +6,7 @@
 #include "critical_section.h"
 #include <cstring>
 #include <vector>
+#include <queue>
 #include <list>
 #include <cstdint>
 #include <memory>
@@ -102,6 +103,20 @@ namespace ffnetwork {
     };
 
     typedef std::list<Message> MessageList;
+    
+    class DelayedMessage {
+        public:
+        DelayedMessage(int delay, uint32_t trigger, uint32_t num, const Message& msg)
+        : cmsDelay_(delay), msTrigger_(trigger), num_(num), msg_(msg) {}
+        bool operator< (const DelayedMessage& dmsg) const {
+            return (dmsg.msTrigger_ < msTrigger_)
+            || ((dmsg.msTrigger_ == msTrigger_) && (dmsg.num_ < num_));
+        }
+        int cmsDelay_;  // for debugging
+        uint32_t msTrigger_;
+        uint32_t num_;
+        Message msg_;
+    };
 
     class MessageQueue {
     public:
@@ -121,19 +136,34 @@ namespace ffnetwork {
                         uint32_t id = 0,
                         MessageData* pdata = NULL,
                         bool time_sensitive = false);
+        
+        virtual void PostDelayed(int cmsDelay,
+                                 MessageHandler* phandler,
+                                 uint32_t id = 0,
+                                 MessageData* pdata = NULL);
+        virtual void PostAt(uint32_t tstamp,
+                            MessageHandler* phandler,
+                            uint32_t id = 0,
+                            MessageData* pdata = NULL);
+
 
         virtual void Clear(MessageHandler* phandler,
                             uint32_t id = MQID_ANY,
                             MessageList* removed = NULL);
+        
 
         virtual void Dispatch(Message *pmsg);
         virtual void ReceiveSends();
+        
+        // Amount of time until the next message can be retrieved
+        virtual int GetDelay();
+        
 
         bool empty() const { return size() == 0u; }
 
         size_t size() const {
             CriticalScope cs(&critical_section_);  // msgq_.size() is not thread safe.
-            return msg_queue_.size() + (fPeekKeep_ ? 1u : 0u);
+            return msg_queue_.size() + dmsgq_.size() + (fPeekKeep_ ? 1u : 0u);
         }
 
         // Internally posts a message which causes the doomed object to be deleted
@@ -148,10 +178,25 @@ namespace ffnetwork {
         sigslot::signal0<> SignalQueueDestroyed;
 
     protected:
+        
+        class PriorityQueue : public std::priority_queue<DelayedMessage> {
+            public:
+            container_type& container() { return c; }
+            void reheap() { make_heap(c.begin(), c.end(), comp); }
+        };
+        
+        void DoDelayPost(int cmsDelay,
+                         uint32_t tstamp,
+                         MessageHandler* phandler,
+                         uint32_t id,
+                         MessageData* pdata);
+        
         bool fStop_;
         bool fPeekKeep_;    
         Message msgPeek_;
         MessageList msg_queue_;
+        PriorityQueue dmsgq_;
+        uint32_t dmsgq_next_num_;
         mutable CriticalSection critical_section_;
 
     private:

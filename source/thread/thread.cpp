@@ -279,7 +279,9 @@ bool Thread::WrapCurrentWithThreadManager(ThreadManager* thread_manager,
 
         while(PopSendMessageFromThread(source, &send_msg)) {
             send_msg.msg.phandler->OnMessage(&send_msg.msg);
+            critical_section_.Enter();
             *send_msg.ready = true;
+            critical_section_.Leave();
         }
 
     }

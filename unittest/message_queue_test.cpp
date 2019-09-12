@@ -10,6 +10,7 @@
 
 #include "thread/thread.h"
 #include "log/log_macro.h"
+#include "utils/time_utils.h"
 
 using namespace ffnetwork ;
 
@@ -19,6 +20,23 @@ public:
         return false;
     }
 };
+
+TEST_F(MessageQueueTest, DelayedPosts) {
+    MessageQueue q;
+    uint64_t now = NowTimeMicros();
+    q.PostAt(now, NULL, 3);
+    q.PostAt(now - 2, NULL, 0);
+    q.PostAt(now - 1, NULL, 1);
+    q.PostAt(now, NULL, 4);
+    q.PostAt(now - 1, NULL, 2);
+    Message msg;
+    for (size_t i=0; i<5; ++i) {
+        memset(&msg, 0, sizeof(msg));
+        EXPECT_TRUE(q.Get(&msg, 0));
+        EXPECT_EQ(i, msg.message_id);
+    }
+    EXPECT_FALSE(q.Get(&msg, 0));  // No more messages
+}
 
 struct DeletedLockChecker {
     DeletedLockChecker(MessageQueueTest* test, bool* was_locked, bool* deleted)

@@ -1,7 +1,8 @@
 #include "message_queue.h"
 #include <algorithm>
 #include <sys/time.h>
-#include <chrono>
+#include "log/log_macro.h"
+#include "utils/time_utils.h"
 #include <assert.h>
 
 namespace ffnetwork {
@@ -77,7 +78,7 @@ namespace ffnetwork {
     }
 
 #pragma mark MessageQueue
-    MessageQueue::MessageQueue() : fStop_(false), fPeekKeep_(false) {
+    MessageQueue::MessageQueue() : fStop_(false), fPeekKeep_(false), dmsgq_next_num_(0) {
         MessageQueueManager::Add(this);
     }
 
@@ -124,7 +125,7 @@ namespace ffnetwork {
 
         int cmsTotal = cmsWait;
         int cmsElapsed = 0;
-        uint64_t msStart = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+        uint64_t msStart = NowTimeMicros();
         uint64_t msCurrent = msStart;
 
         while(true) {
@@ -137,6 +138,18 @@ namespace ffnetwork {
             while(true) {
                 {
                     CriticalScope cs(&critical_section_);
+                    
+                    if (first_pass) {
+                        first_pass = false;
+                        while (!dmsgq_.empty()) {
+                            if (TimeIsLater(msCurrent, dmsgq_.top().msTrigger_)) {
+                                cmsDelayNext = TimeDiff(dmsgq_.top().msTrigger_, msCurrent);
+                                break;
+                            }
+                            msg_queue_.push_back(dmsgq_.top().msg_);
+                            dmsgq_.pop();
+                        }
+                    }
 
                     if (msg_queue_.empty()) {
                         break;
@@ -172,11 +185,10 @@ namespace ffnetwork {
             }
 
             // If the specified timeout expired, return
-            msCurrent = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+            msCurrent = NowTimeMicros();
             cmsElapsed = msCurrent - msStart;
-            if (cmsWait != kForever) {
-                if (cmsElapsed >= cmsWait)
-                    return false;
+            if (cmsWait != kForever && cmsElapsed >= cmsWait) {
+                return false;
             }
         }
 
@@ -202,10 +214,66 @@ namespace ffnetwork {
         msg.message_id = id;
         msg.pdata = pdata;
         if (time_sensitive) {
-            uint64_t now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+            uint64_t now = NowTimeMicros();
             msg.ts_sensitive = now + kMaxMsgLatency;
         }
         msg_queue_.push_back(msg);
+    }
+    
+    
+    
+    void MessageQueue::PostDelayed(int cmsDelay,
+                                   MessageHandler* phandler,
+                                   uint32_t id,
+                                   MessageData* pdata) {
+        return DoDelayPost(cmsDelay, TimeAfter(cmsDelay), phandler, id, pdata);
+    }
+    void MessageQueue::PostAt(uint32_t tstamp,
+                              MessageHandler* phandler,
+                              uint32_t id,
+                              MessageData* pdata) {
+        return DoDelayPost(TimeUntil(tstamp), tstamp, phandler, id, pdata);
+    }
+    
+    void MessageQueue::DoDelayPost(int cmsDelay,
+                                   uint32_t tstamp,
+                                   MessageHandler* phandler,
+                                   uint32_t id,
+                                   MessageData* pdata) {
+        if (fStop_) {
+            return;
+        }
+        // Keep thread safe
+        // Add to the priority queue. Gets sorted soonest first.
+        // Signal for the multiplexer to return.
+        CriticalScope cs(&critical_section_);
+        Message msg;
+        msg.phandler = phandler;
+        msg.message_id = id;
+        msg.pdata = pdata;
+        DelayedMessage dmsg(cmsDelay, tstamp, dmsgq_next_num_, msg);
+        dmsgq_.push(dmsg);
+        // If this message queue processes 1 message every millisecond for 50 days,
+        // we will wrap this number.  Even then, only messages with identical times
+        // will be misordered, and then only briefly.  This is probably ok.
+        if (++dmsgq_next_num_ == 0) {
+            LOGE("dmsgq_next_num_ is 0");
+        }
+    }
+    
+    int MessageQueue::GetDelay() {
+        CriticalScope cs(&critical_section_);
+        if (!msg_queue_.empty()) {
+            return 0;
+        }
+        if (!dmsgq_.empty()) {
+            int delay = TimeUntil(dmsgq_.top().msTrigger_);
+            if (delay < 0) {
+                delay = 0;
+            }
+            return delay;
+        }
+        return kForever;
     }
 
     void MessageQueue::Clear(MessageHandler* phandler,
