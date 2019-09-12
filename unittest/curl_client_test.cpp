@@ -5,6 +5,9 @@
 #include "gtest/gtest.h"
 #include "ffnetwork/client.h"
 #include "log/log_macro.h"
+#include <atomic>
+#include <mutex>
+#include <condition_variable>
 
 using namespace ffnetwork;
 
