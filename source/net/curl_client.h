@@ -75,6 +75,7 @@ public std::enable_shared_from_this<CurlClient>
         void WaitMulti(long timeout_ms);
         void WaitFD(long timeout_ms);
         bool HandleCurlMsg();
+        ResponseCode ConvertCurlCode(CURLcode);
 
     // Curl callbacks
     public:

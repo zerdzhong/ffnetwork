@@ -102,10 +102,11 @@ TEST(CurlClientTests, request_batch) {
     EXPECT_NE(response1.get(), nullptr);
     EXPECT_NE(response2.get(), nullptr);
     EXPECT_NE(response3.get(), nullptr);
-    
-    LOGD("request url:%s response code:%d", response1->request()->url().c_str(), response1->statusCode());
-    LOGD("request url:%s response code:%d", response2->request()->url().c_str(), response2->statusCode());
-    LOGD("request url:%s response code:%d", response3->request()->url().c_str(), response3->statusCode());
-    LOGD("request url:%s response code:%d", response4->request()->url().c_str(), response4->statusCode());
+    EXPECT_NE(response4.get(), nullptr);
+
+    EXPECT_NE(response1->responseCode(), ResponseCode::Invalid);
+    EXPECT_NE(response2->responseCode(), ResponseCode::Invalid);
+    EXPECT_NE(response3->responseCode(), ResponseCode::Invalid);
+    EXPECT_NE(response4->responseCode(), ResponseCode::Invalid);
 }
 

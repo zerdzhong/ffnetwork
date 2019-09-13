@@ -158,10 +158,14 @@ namespace ffnetwork {
 
                 curl_easy_getinfo(handle, CURLINFO_PRIVATE, &request_hash);
 
-                // TODO retry?
-                if (msg->data.result == CURLE_OPERATION_TIMEDOUT) {
+                if(msg->data.result != CURLE_OK){
+                    // TODO retry?xxxxxxxxxxx
+                    LOGE("CURL Error (%s)", curl_easy_strerror(msg->data.result));
                 }
 
+                ResponseCode response_code = ResponseCode::Invalid;
+                response_code = ConvertCurlCode(msg->data.result);
+                
                 // make response to send to callback
                 long status_code = 0;
                 curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &status_code);
@@ -177,7 +181,7 @@ namespace ffnetwork {
                 LOGD("Response size: %lu", data_length);
 
                 std::shared_ptr<Response> new_response = std::make_shared<ResponseImpl>(
-                        request, data, data_length, HttpStatusCode(status_code), false);
+                        request, data, data_length, HttpStatusCode(status_code), response_code, false);
 
                 auto &response_headers = new_response->headerMap();
                 response_headers = std::move(handle_info->response_headers);
@@ -196,6 +200,29 @@ namespace ffnetwork {
         }
 
         return msg_count > 0;
+    }
+    
+    ResponseCode CurlClient::ConvertCurlCode(CURLcode code) {
+        ResponseCode response_code = ResponseCode::Invalid;
+        switch (code) {
+            case CURLE_OK: {
+                response_code = ResponseCode::OK;
+                break;
+            }
+            case CURLE_COULDNT_CONNECT: {
+                response_code = ResponseCode::ConnectToServerFailed;
+                break;
+            }
+            case CURLE_OPERATION_TIMEDOUT: {
+                response_code = ResponseCode::Timeout;
+                break;
+            }
+            default:
+                response_code = ResponseCode::UnknownError;
+                break;
+        }
+
+        return response_code;
     }
 
     void CurlClient::WaitMulti(long timeout_ms) {
