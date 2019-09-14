@@ -12,3 +12,4 @@ build
 
 #clion
 cmake-build-*
+xcode-build

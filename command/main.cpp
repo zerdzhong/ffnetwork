@@ -1,13 +1,15 @@
 #include <iostream>
 #include <unistd.h>
+#include <cstdlib>
+#include <ffnetwork/client.h>
 
 struct GlobalArgs {
-    const char* out_file_name;//-o option
+    const char* out_file_name; //-o option
     bool verbose;   //-v option
     const char* url;
 } global_args;
 
-static const char* opt_string = "ovh?";
+static const char* opt_string = "o:vh?";
 
 void display_usage() {
     std::cout<<"usage: -o output filename -v verbose log"<<std::endl;
@@ -34,13 +36,21 @@ int main(int argc, char ** argv) {
                 display_usage();
                 break;
             default:
+                printf("optopt = %c\n", (char)optopt);
+                printf("opterr = %d\n", opterr);
+                display_usage();
                 exit(EXIT_FAILURE);
-                break;
         }
     }
 
     global_args.url = argv[optind];
-    std::cout<<global_args.url<<std::endl;
+
+    auto client = ffnetwork::CreateClient();
+    auto request = ffnetwork::CreateRequest(global_args.url, {});
+    auto response = client->PerformRequestSync(request);
+
+    size_t data_length = 0;
+    std::cout<<response->data(data_length);
 
     return 0;
 }
