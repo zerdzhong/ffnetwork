@@ -110,3 +110,33 @@ TEST(CurlClientTests, request_batch) {
     EXPECT_NE(response4->responseCode(), ResponseCode::Invalid);
 }
 
+TEST(CurlClientTests, Cancel) {
+    auto client = CreateClient();
+    EXPECT_NE((void *) 0, client.get());
+
+    auto url = "https://github.com";
+    auto request = CreateRequest(url, {});
+    std::shared_ptr<Response> response_1 = nullptr;
+
+    std::mutex mutex;
+    std::condition_variable cv;
+    std::atomic<bool > request_done(false);
+
+    auto request_task = client->PerformRequest(request, [&](const std::shared_ptr<Response> &response) {
+        {
+            std::lock_guard<std::mutex> lock(mutex);
+            request_done = true;
+            response_1 = response;
+        }
+        cv.notify_one();
+    });
+
+    request_task->cancel();
+
+    std::unique_lock<std::mutex> lock(mutex);
+    while (!request_done) {
+        cv.wait(lock);
+    }
+
+    EXPECT_EQ(request_task->cancelled(), true);
+}

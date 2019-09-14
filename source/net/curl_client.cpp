@@ -96,7 +96,7 @@ namespace ffnetwork {
     }
 
     void CurlClient::RequestTaskDidCancel(const std::shared_ptr<RequestTask> &task) const {
-
+        
     }
 
 
@@ -140,7 +140,6 @@ namespace ffnetwork {
         handles_.erase(hash);
     }
 
-
     bool CurlClient::HandleCurlMsg() {
 
         CURLMsg *msg;
@@ -159,7 +158,7 @@ namespace ffnetwork {
                 curl_easy_getinfo(handle, CURLINFO_PRIVATE, &request_hash);
 
                 if(msg->data.result != CURLE_OK){
-                    // TODO retry?xxxxxxxxxxx
+                    // TODO retry?
                     LOGE("CURL Error (%s)", curl_easy_strerror(msg->data.result));
                 }
 
@@ -173,7 +172,7 @@ namespace ffnetwork {
                 // Look up response data and original request
                 HandleInfo *handle_info = handles_[*request_hash].get();
                 const std::shared_ptr<Request> request = handle_info->request;
-                const unsigned char *data = (const unsigned char *) handle_info->response.c_str();
+                const auto *data = (const unsigned char *) handle_info->response.c_str();
                 size_t data_length = handle_info->response.size();
 
                 LOGD("Got response for: %s", request->url().c_str());
@@ -284,7 +283,7 @@ namespace ffnetwork {
         auto headers = reinterpret_cast<std::unordered_map<std::string, std::string> *>(str);
         std::string header(data, size * nitems), key, value;
         size_t pos;
-        if ((pos = header.find(":")) != std::string::npos) {
+        if ((pos = header.find(':')) != std::string::npos) {
             key = header.substr(0, pos);
             value = header.substr(std::min(pos + 2, header.length()));
         }
