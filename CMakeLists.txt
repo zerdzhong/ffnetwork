@@ -26,6 +26,7 @@ message("OUTPUT_DIRECTORY: ${OUTPUT_DIRECTORY}")
 
 add_subdirectory(source)
 add_subdirectory(3rdparty)
+add_subdirectory(command)
 
 if(CMAKE_BUILD_TYPE MATCHES Debug)
   add_subdirectory(unittest)
