@@ -14,6 +14,7 @@
 #include <mutex>
 #include <atomic>
 #include <condition_variable>
+#include "thread/async_invoker.h"
 
 namespace ffnetwork {
 
@@ -52,8 +53,10 @@ public std::enable_shared_from_this<CurlClient>
                 const std::shared_ptr<Request> &request,
                 std::function<void(const std::shared_ptr<Response> &)> callback) override;
 
+        void CancelRequest(const std::string& hash);
+
         // RequestTokenDelegate
-        void RequestTaskDidCancel(const std::shared_ptr<RequestTask> &task) const override;
+        void RequestTaskDidCancel(const std::shared_ptr<RequestTask> &task) override;
 
         // Runnable
         void Run(Thread* thread) override;
@@ -67,6 +70,7 @@ public std::enable_shared_from_this<CurlClient>
         bool have_new_request_;
         std::atomic<bool> is_terminated_;
         Thread request_thread_;
+        AsyncInvoker async_invoker_;
 
         bool use_multi_wait_;
 

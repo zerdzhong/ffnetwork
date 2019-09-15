@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include "log/log_macro.h"
 #include "request_task_impl.h"
+#include "thread/async_invoker.h"
 #include <ffnetwork/response_impl.h>
 
 namespace {
@@ -95,8 +96,9 @@ namespace ffnetwork {
         return request_task;
     }
 
-    void CurlClient::RequestTaskDidCancel(const std::shared_ptr<RequestTask> &task) const {
-        
+    void CurlClient::RequestTaskDidCancel(const std::shared_ptr<RequestTask> &task) {
+        std::string request_hash = task->taskIdentifier();
+        async_invoker_.AsyncInvoke<void>(&request_thread_, std::bind(&CurlClient::CancelRequest, this, request_hash));
     }
 
 
@@ -114,6 +116,8 @@ namespace ffnetwork {
             if (HandleCurlMsg()) {
                 continue;
             }
+
+            thread->ProcessMessages(100);
 
             if (active_requests > 0) {
                 if (use_multi_wait_) {
@@ -293,6 +297,31 @@ namespace ffnetwork {
         }
 
         return size*nitems;
+    }
+
+    void CurlClient::CancelRequest(const std::string &hash) {
+        if (ThreadManager::Instance()->CurrentThread() != &request_thread_) {
+            return;
+        }
+
+        if (handles_.find(hash) == handles_.end()) {
+            return;;
+        }
+
+        auto& handle_info = handles_[hash];
+
+        std::shared_ptr<Response> cancelled_response = std::make_shared<ResponseImpl>(
+                handle_info->request, nullptr, 0, HttpStatusCode::StatusCodeInvalid, ResponseCode::UserCancel, true);
+
+        // Save callback before cleanup
+        auto cb = handle_info->callback;
+
+        curl_multi_remove_handle(curl_multi_handle_, handle_info->handle);
+        CleanupRequest(hash);
+
+        if (cb) {
+            cb(cancelled_response);
+        }
     }
 
 #pragma mark- HandleInfo

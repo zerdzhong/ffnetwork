@@ -6,7 +6,7 @@
 namespace ffnetwork {
     class RequestTaskDelegate {
     public:
-        virtual void RequestTaskDidCancel(const std::shared_ptr<RequestTask> &task) const = 0;
+        virtual void RequestTaskDidCancel(const std::shared_ptr<RequestTask> &task) = 0;
     };
 }//end of namespace ffnetwork
 

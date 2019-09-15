@@ -40,8 +40,8 @@ TEST(CurlClientTests, request_batch) {
     auto url = "https://github.com";
     auto request = CreateRequest(url, header);
     std::shared_ptr<Response> response1 = nullptr;
-    
-    auto url2 = "https://www.youtube.com";
+
+    auto url2 = "http://www.cplusplus.com/doc/tutorial/";
     auto request2 = CreateRequest(url2, header);
     std::shared_ptr<Response> response2 = nullptr;
     
@@ -49,13 +49,9 @@ TEST(CurlClientTests, request_batch) {
     auto request3 = CreateRequest(url3, header);
     std::shared_ptr<Response> response3 = nullptr;
     
-    std::string url4 = "http://www.cplusplus.com/doc/tutorial/";
-    auto request4 = CreateRequest(url4, header);
-    std::shared_ptr<Response> response4 = nullptr;
-    
     std::mutex mutex;
     std::condition_variable cv;
-    std::atomic<int> request_count(-4);
+    std::atomic<int> request_count(-3);
     
     client->PerformRequest(request, [&](const std::shared_ptr<Response> &response) {
         {
@@ -83,17 +79,7 @@ TEST(CurlClientTests, request_batch) {
         }
         cv.notify_one();
     });
-    
-    client->PerformRequest(request4, [&](const std::shared_ptr<Response> &response) {
-        {
-            std::lock_guard<std::mutex> lock(mutex);
-            request_count ++;
-            response4 = response;
-        }
-        cv.notify_one();
-    });
-    
-    
+
     std::unique_lock<std::mutex> lock(mutex);
     while (request_count < 0) {
         cv.wait(lock);
@@ -102,12 +88,10 @@ TEST(CurlClientTests, request_batch) {
     EXPECT_NE(response1.get(), nullptr);
     EXPECT_NE(response2.get(), nullptr);
     EXPECT_NE(response3.get(), nullptr);
-    EXPECT_NE(response4.get(), nullptr);
 
     EXPECT_NE(response1->responseCode(), ResponseCode::Invalid);
     EXPECT_NE(response2->responseCode(), ResponseCode::Invalid);
     EXPECT_NE(response3->responseCode(), ResponseCode::Invalid);
-    EXPECT_NE(response4->responseCode(), ResponseCode::Invalid);
 }
 
 TEST(CurlClientTests, Cancel) {
@@ -116,7 +100,7 @@ TEST(CurlClientTests, Cancel) {
 
     auto url = "https://github.com";
     auto request = CreateRequest(url, {});
-    std::shared_ptr<Response> response_1 = nullptr;
+    std::shared_ptr<Response> cancelled_response = nullptr;
 
     std::mutex mutex;
     std::condition_variable cv;
@@ -126,7 +110,7 @@ TEST(CurlClientTests, Cancel) {
         {
             std::lock_guard<std::mutex> lock(mutex);
             request_done = true;
-            response_1 = response;
+            cancelled_response = response;
         }
         cv.notify_one();
     });
@@ -139,4 +123,8 @@ TEST(CurlClientTests, Cancel) {
     }
 
     EXPECT_EQ(request_task->cancelled(), true);
+    EXPECT_NE((void *) 0, cancelled_response.get());
+    EXPECT_EQ(cancelled_response->cancelled(), true);
+    EXPECT_EQ(cancelled_response->responseCode(), ResponseCode::UserCancel);
+    EXPECT_EQ(cancelled_response->statusCode(), HttpStatusCode::StatusCodeInvalid);
 }

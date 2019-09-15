@@ -162,8 +162,9 @@ bool Thread::ProcessMessages(int cmsLoop) {
         Dispatch(&msg);
         if (cmsLoop != kForever) {
             cmsNext = TimeUntil(msEnd);
-            if (cmsNext < 0)
-            return true;
+            if (cmsNext < 0) {
+                return true;
+            }
         }
     }
 }
