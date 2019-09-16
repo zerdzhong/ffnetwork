@@ -8,6 +8,7 @@
 #include <utility>
 #include <unistd.h>
 #include "log/log_macro.h"
+#include "utils/time_utils.h"
 #include "request_task_impl.h"
 #include "thread/async_invoker.h"
 #include <ffnetwork/response_impl.h>
@@ -83,9 +84,13 @@ namespace ffnetwork {
 
         std::shared_ptr<RequestTask> request_task =
                 std::make_shared<RequestTaskImpl>(shared_from_this(), request_hash);
+        
+        auto metrics = std::make_shared<Metrics>();
 
-        handles_[request_hash] = std::unique_ptr<HandleInfo>(new HandleInfo(request, callback));
+        handles_[request_hash] = std::unique_ptr<HandleInfo>(new HandleInfo(request, metrics, callback));
         std::unique_ptr<HandleInfo> &handle_info = handles_[request_hash];
+        
+        metrics->request_start_ms = NowTimeMillis();
 
         curl_multi_add_handle(curl_multi_handle_, handle_info->handle);
 
@@ -179,15 +184,20 @@ namespace ffnetwork {
                 const auto *data = (const unsigned char *) handle_info->response.c_str();
                 size_t data_length = handle_info->response.size();
 
-                LOGD("Got response for: %s", request->url().c_str());
-                LOGD("Response code: %lu", status_code);
-                LOGD("Response size: %lu", data_length);
+//                LOGD("Got response for: %s", request->url().c_str());
+//                LOGD("Response code: %lu", status_code);
+//                LOGD("Response size: %lu", data_length);
+                
+                auto metrics = handle_info->metrics;
+                ConfigMetrics(metrics.get(), handle);
+                metrics->request_end_ms = NowTimeMillis();
 
                 std::shared_ptr<Response> new_response = std::make_shared<ResponseImpl>(
-                        request, data, data_length, HttpStatusCode(status_code), response_code, false);
+                        request, data, data_length, HttpStatusCode(status_code), response_code, metrics,false);
 
                 auto &response_headers = new_response->headerMap();
                 response_headers = std::move(handle_info->response_headers);
+                
 
                 // Save callback before cleanup
                 auto cb = handle_info->callback;
@@ -227,12 +237,40 @@ namespace ffnetwork {
 
         return response_code;
     }
+    
+    void CurlClient::ConfigMetrics(Metrics *metrics, CURL *handle) {
+        
+        if (!metrics || !handle) {
+            return;
+        }
+        
+        curl_easy_getinfo(handle, CURLINFO_NAMELOOKUP_TIME, &metrics->dns_time_ms);
+        curl_easy_getinfo(handle, CURLINFO_CONNECT_TIME, &metrics->connect_time_ms);
+        curl_easy_getinfo(handle, CURLINFO_APPCONNECT_TIME, &metrics->ssl_time_ms);
+        curl_easy_getinfo(handle, CURLINFO_PRETRANSFER_TIME, &metrics->pretransfer_time_ms);
+        curl_easy_getinfo(handle, CURLINFO_STARTTRANSFER_TIME, &metrics->transfer_start_time_ms);
+        curl_easy_getinfo(handle, CURLINFO_TOTAL_TIME, &metrics->totoal_time_ms);
+        
+        metrics->dns_time_ms *= 1000;
+        metrics->connect_time_ms *= 1000;
+        metrics->ssl_time_ms *= 1000;
+        metrics->pretransfer_time_ms *= 1000;
+        metrics->transfer_start_time_ms *= 1000;
+        metrics->totoal_time_ms *= 1000;
+        
+        curl_off_t upload_count, download_count;
+        curl_easy_getinfo(handle, CURLINFO_SIZE_UPLOAD_T, &upload_count);
+        curl_easy_getinfo(handle, CURLINFO_SIZE_DOWNLOAD_T, &download_count);
+    
+        metrics->send_byte_count = upload_count;
+        metrics->receive_byte_count = download_count;
+    }
 
     void CurlClient::WaitMulti(long timeout_ms) {
         int num_fds = -1;
-        int res = curl_multi_wait(curl_multi_handle_, NULL, 0, timeout_ms, &num_fds);
+        CURLMcode res = curl_multi_wait(curl_multi_handle_, NULL, 0, timeout_ms, &num_fds);
         if(res != CURLM_OK) {
-            LOGE("curl_multi_wait not ok (%d)\n", res);
+            LOGE("curl_multi_wait not ok err_code:%d, desc:%s\n", res, curl_multi_strerror(res));
         }
     }
 
@@ -309,9 +347,13 @@ namespace ffnetwork {
         }
 
         auto& handle_info = handles_[hash];
+        
+        auto metrics = handle_info->metrics;
+        ConfigMetrics(metrics.get(), handle_info->handle);
+        metrics->request_end_ms = NowTimeMillis();
 
         std::shared_ptr<Response> cancelled_response = std::make_shared<ResponseImpl>(
-                handle_info->request, nullptr, 0, HttpStatusCode::StatusCodeInvalid, ResponseCode::UserCancel, true);
+                handle_info->request,nullptr, 0, HttpStatusCode::StatusCodeInvalid, ResponseCode::UserCancel, metrics, true);
 
         // Save callback before cleanup
         auto cb = handle_info->callback;
@@ -336,8 +378,9 @@ namespace ffnetwork {
     }
 
     CurlClient::HandleInfo::HandleInfo(std::shared_ptr<Request> req,
+                                       std::shared_ptr<Metrics> metrics_p,
                                        std::function<void(const std::shared_ptr<Response> &)> callback)
-                                       :request(req), request_headers(nullptr), callback(std::move(callback))
+                                       :request(req), request_headers(nullptr), callback(std::move(callback)), metrics(metrics_p)
     {
         handle = curl_easy_init();
         request_hash = request->hash();

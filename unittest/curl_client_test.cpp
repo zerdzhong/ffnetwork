@@ -85,6 +85,10 @@ TEST(CurlClientTests, request_batch) {
         cv.wait(lock);
     }
     
+    LOGD("response1 metrics :%s", metrics_dump_info(response1->metrics().get()).c_str());
+    LOGD("response2 metrics :%s", metrics_dump_info(response2->metrics().get()).c_str());
+    LOGD("response3 metrics :%s", metrics_dump_info(response3->metrics().get()).c_str());
+    
     EXPECT_NE(response1.get(), nullptr);
     EXPECT_NE(response2.get(), nullptr);
     EXPECT_NE(response3.get(), nullptr);

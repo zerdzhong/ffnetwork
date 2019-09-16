@@ -4,17 +4,25 @@
 
 #include <ffnetwork/response_impl.h>
 #include <cstring>
+#include <sstream>
 
 namespace ffnetwork {
 
-    ResponseImpl::ResponseImpl(const std::shared_ptr<Request> &request, const unsigned char *data, size_t data_length,
-                               HttpStatusCode status_code, ResponseCode response_code, bool cancelled) :
+    ResponseImpl::ResponseImpl(const std::shared_ptr<Request> &request,
+                               const unsigned char *data,
+                               size_t data_length,
+                               HttpStatusCode status_code,
+                               ResponseCode response_code,
+                               const std::shared_ptr<Metrics> &metrics,
+                               bool cancelled) :
     request_(request),
+    metrics_(metrics),
     data_(data_length == 0 ? nullptr : (unsigned char *)malloc(data_length)),
     data_length_(data_length),
     status_code_(status_code),
     response_code_(response_code),
-    cancelled_(cancelled) {
+    cancelled_(cancelled)
+    {
         if (data_length > 0) {
             memcpy(data_, data, data_length);
         }
@@ -36,6 +44,10 @@ namespace ffnetwork {
 
     const std::shared_ptr<Request> ResponseImpl::request() const {
         return request_;
+    }
+    
+    const std::shared_ptr<Metrics> ResponseImpl::metrics() const {
+        return metrics_;
     }
 
     const unsigned char *ResponseImpl::data(size_t &data_length) const {
@@ -81,6 +93,26 @@ namespace ffnetwork {
 
     std::string ResponseImpl::serialise() const {
         return std::string();
+    }
+    
+    
+    std::string metrics_dump_info(Metrics *metrics) {
+        std::stringstream iss;
+        
+        iss
+        << "request_start_time: " << metrics->request_start_ms << '\n'
+        << "request_end_ms: " << metrics->request_end_ms << '\n'
+        << "dns_time_ms: " << metrics->dns_time_ms << '\n'
+        << "connect_time_ms: " << metrics->connect_time_ms << '\n'
+        << "ssl_time_ms: " << metrics->ssl_time_ms << '\n'
+        << "pretransfer_time_ms: " << metrics->pretransfer_time_ms << '\n'
+        << "transfer_start_time_ms: " << metrics->transfer_start_time_ms << '\n'
+        << "totoal_time_ms: " << metrics->totoal_time_ms << '\n'
+        << "receive byte count: " << metrics->receive_byte_count << '\n'
+        << "send byte count: " << metrics->send_byte_count << '\n'
+        ;
+        
+        return iss.str();
     }
 
 }

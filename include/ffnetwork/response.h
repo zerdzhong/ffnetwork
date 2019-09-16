@@ -69,11 +69,32 @@ namespace ffnetwork {
         InvalidUrl,                 //invalid url format
         UnknownError,
     };
+        
+    struct Metrics {
+        uint64_t request_start_ms = 0;
+        uint64_t request_end_ms = 0;
+        
+        
+        double dns_time_ms = 0;
+        double connect_time_ms = 0;
+        double ssl_time_ms = 0;
+        double pretransfer_time_ms = 0;
+        double transfer_start_time_ms = 0;
+        double totoal_time_ms = 0;
+        
+        bool socket_reuse = false;
+        int64_t send_byte_count = -1;
+        int64_t receive_byte_count = -1;
+    };
+        
+    std::string metrics_dump_info(Metrics *metrics);
 
     class Response {
     public:
 
         virtual const std::shared_ptr<Request> request() const = 0;
+        virtual const std::shared_ptr<Metrics> metrics() const = 0;
+        
         virtual const unsigned char *data(size_t &data_length) const = 0;
         virtual HttpStatusCode statusCode() const = 0;
         virtual ResponseCode responseCode() const = 0;

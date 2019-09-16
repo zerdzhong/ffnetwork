@@ -18,6 +18,7 @@ namespace ffnetwork {
                                size_t data_length,
                                HttpStatusCode status_code,
                                ResponseCode response_code,
+                               const std::shared_ptr<Metrics> &metrics,
                                bool cancelled);
         ResponseImpl(const std::string &serialised,
                                const unsigned char *data,
@@ -27,6 +28,7 @@ namespace ffnetwork {
 
         // Response
         const std::shared_ptr<Request> request() const override;
+        const std::shared_ptr<Metrics> metrics() const override;
         const unsigned char *data(size_t &data_length) const override;
         HttpStatusCode statusCode() const override;
         ResponseCode responseCode() const override;
@@ -42,6 +44,7 @@ namespace ffnetwork {
 
     private:
         std::shared_ptr<Request> request_;
+        std::shared_ptr<Metrics> metrics_;
         unsigned char *data_;
         const size_t data_length_;
         HttpStatusCode status_code_;
