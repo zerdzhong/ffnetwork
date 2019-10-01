@@ -70,7 +70,9 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
     target_compile_definitions(ffnetwork PUBLIC -DDebug)
 endif()
 
-target_link_libraries(ffnetwork PUBLIC libcurl)
+add_subdirectory(base)
+
+target_link_libraries(ffnetwork PUBLIC libcurl ffbase)
 
 target_include_directories(ffnetwork PUBLIC 
     "${FFNETWORK_INCLUDE_DIRECTORY}"
