@@ -17,7 +17,7 @@ set(SOURCE_FILES
         thread_test.cpp 
         gunit.h
         callback_test.cpp
-        curl_client_test.cpp)
+        curl_client_test.cpp base_message_test.cpp)
 
 add_executable(unittest ${SOURCE_FILES})
 target_link_libraries(unittest gmock_main ffnetwork)

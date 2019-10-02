@@ -4,8 +4,14 @@ project(ffbase)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(FFBASE_SOURCE_FILES message.cpp)
-set(FFBASE_HEADER_FILES macros.h message.h)
+set(FFBASE_SOURCE_FILES
+    macros.h
+    message.h
+    logging.h
+    message.cpp
+    logging.cpp)
+    
+set(FFBASE_HEADER_FILES)
 
 add_library(ffbase ${FFBASE_SOURCE_FILES} ${FFBASE_HEADER_FILES})
 
@@ -17,3 +23,14 @@ endif()
 if(CMAKE_BUILD_TYPE MATCHES Debug)
     target_compile_definitions(ffbase PUBLIC -DDebug)
 endif()
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    target_compile_definitions(ffnetwork PRIVATE WIN)
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Android")
+    target_compile_definitions(ffnetwork PRIVATE ANDROID)
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    target_compile_definitions(ffnetwork PRIVATE LINUX)
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    target_compile_definitions(ffnetwork PRIVATE MAC)
+endif ()
+
