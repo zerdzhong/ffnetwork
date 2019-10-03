@@ -41,14 +41,29 @@ public:
 
     //Encoder
     template <typename T, typename = std::enable_if<std::is_trivially_copyable<T>::value>>
-            FF_WARN_UNUSED_RESULT bool Encode(const T& value) {
-                if (auto* buffer = PrepareEncode(sizeof(T))) {
-                    memcpy(buffer, &value, sizeof(T));
-                    return true;
-                }
-
-                return false;
-            }
+    FF_WARN_UNUSED_RESULT bool Encode(const T& value) {
+        if (auto* buffer = PrepareEncode(sizeof(T))) {
+            memcpy(buffer, &value, sizeof(T));
+            return true;
+        }
+        
+        return false;
+    }
+    
+    FF_WARN_UNUSED_RESULT bool Encode(const MessageSerializable& value) {
+        return value.Serialize(*this);
+    }
+    
+    //Decoder
+    template <typename T, typename = std::enable_if<std::is_trivially_copyable<T>::value>>
+    FF_WARN_UNUSED_RESULT bool Decode(T& value) {
+        if (auto* buffer = PrepareDecode(sizeof(T))) {
+            memcpy(&value, buffer, sizeof(T));
+            return true;
+        }
+        
+        return false;
+    }
 
 private:
     uint8_t* buffer_ = nullptr;
