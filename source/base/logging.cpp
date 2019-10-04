@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <iostream>
+#include <cstring>
 #include "logging.h"
 
 #if defined(ANDROID)
