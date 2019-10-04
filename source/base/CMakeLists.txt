@@ -5,11 +5,14 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(FFBASE_SOURCE_FILES
-    macros.h
-    message.h
-    logging.h
-    message.cpp
-    logging.cpp)
+        macros.h
+        message.h
+        logging.h
+        message.cpp
+        logging.cpp
+        time/time_point.cpp
+        time/time_point.h
+        time/time_delta.h)
     
 set(FFBASE_HEADER_FILES)
 
