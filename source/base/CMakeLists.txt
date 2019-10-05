@@ -12,7 +12,10 @@ set(FFBASE_SOURCE_FILES
         logging.cpp
         time/time_point.cpp
         time/time_point.h
-        time/time_delta.h)
+        time/time_delta.h
+        thread/thread_annotations.h
+        thread/mutex.cpp
+        thread/mutex.h)
     
 set(FFBASE_HEADER_FILES)
 
