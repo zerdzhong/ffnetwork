@@ -63,7 +63,7 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Android")
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     target_compile_definitions(ffnetwork PRIVATE LINUX)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    target_compile_definitions(ffnetwork PRIVATE MAC)
+    target_compile_definitions(ffnetwork PRIVATE DARWIN)
 endif ()
 
 if(CMAKE_BUILD_TYPE MATCHES Debug)

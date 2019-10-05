@@ -39,9 +39,9 @@ namespace ffnetwork {
             struct timespec ts;
 #if HAVE_PTHREAD_COND_TIMEDWAIT_RELATIVE
             // Use relative time version, which tends to be more efficient for
-    // pthread implementations where provided (like on Android).
-    ts.tv_sec = milliseconds / 1000;
-    ts.tv_nsec = (milliseconds % 1000) * 1000000;
+            // pthread implementations where provided (like on Android).
+            ts.tv_sec = milliseconds / 1000;
+            ts.tv_nsec = (milliseconds % 1000) * 1000000;
 #else
             struct timeval tv;
             gettimeofday(&tv, NULL);

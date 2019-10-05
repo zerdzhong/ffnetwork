@@ -2,7 +2,7 @@
 // Created by zerdzhong on 2019/10/2.
 //
 
-#include "base/message.h"
+#include "base/messageloop/message.h"
 #include "gtest/gtest.h"
 
 using namespace ffbase;

@@ -6,6 +6,7 @@
 #define FFBASE_MUTEX_H
 
 #include "thread_annotations.h"
+#include <mutex>
 
 namespace ffbase {
 
@@ -52,6 +53,19 @@ class FF_SCOPED_CAPABILITY UniqueLock {
 
  private:
   SharedMutex& shared_mutex_;
+};
+
+// RAII wrapper that does an exclusive acquire of a SharedMutex.
+class FF_SCOPED_CAPABILITY ScopedMutex {
+ public:
+  explicit ScopedMutex(std::mutex& mutex) FF_ACQUIRE(mutex) : mutex_(mutex) {
+    mutex_.lock()
+  }
+
+    ~ScopedMutex() FF_RELEASE() { mutex_.unlock(); }
+
+ private:
+  std::mutex& mutex_;
 };
 
 }

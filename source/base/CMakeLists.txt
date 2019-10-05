@@ -3,21 +3,37 @@ project(ffbase)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_C_FLAGS "-x objective-c")
 
 set(FFBASE_SOURCE_FILES
         macros.h
-        message.h
+        messageloop/message.h
         logging.h
-        message.cpp
+        messageloop/message.cpp
         logging.cpp
         time/time_point.cpp
         time/time_point.h
         time/time_delta.h
         thread/thread_annotations.h
         thread/mutex.cpp
-        thread/mutex.h)
+        thread/mutex.h
+        messageloop/task_runner.cpp
+        messageloop/task_runner.h
+        messageloop/message_loop.cpp
+        messageloop/message_loop.h
+        messageloop/message_loop_impl.cpp
+        messageloop/message_loop_impl.h
+        messageloop/message_loop_task_queues.cpp
+        messageloop/message_loop_task_queues.h
+        )
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    set(FFBASE_SOURCE_FILES ${FFBASE_SOURCE_FILES}
+            messageloop/message_loop_impl_darwin.h
+            messageloop/message_loop_impl_darwin.mm)
+endif ()
     
-set(FFBASE_HEADER_FILES)
+set(FFBASE_HEADER_FILES )
 
 add_library(ffbase ${FFBASE_SOURCE_FILES} ${FFBASE_HEADER_FILES})
 
@@ -40,3 +56,4 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     target_compile_definitions(ffnetwork PRIVATE MAC)
 endif ()
 
+target_include_directories(ffbase PUBLIC ${CMAKE_CURRENT_LIST_DIR})
