@@ -59,7 +59,7 @@ class FF_SCOPED_CAPABILITY UniqueLock {
 class FF_SCOPED_CAPABILITY ScopedMutex {
  public:
   explicit ScopedMutex(std::mutex& mutex) FF_ACQUIRE(mutex) : mutex_(mutex) {
-    mutex_.lock()
+      mutex_.lock();
   }
 
     ~ScopedMutex() FF_RELEASE() { mutex_.unlock(); }
