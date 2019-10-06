@@ -25,7 +25,8 @@ set(FFBASE_SOURCE_FILES
         messageloop/message_loop_impl.h
         messageloop/message_loop_task_queues.cpp
         messageloop/message_loop_task_queues.h
-        )
+        thread/thread_local.h
+        thread/thread_local.cpp)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(FFBASE_SOURCE_FILES ${FFBASE_SOURCE_FILES}
