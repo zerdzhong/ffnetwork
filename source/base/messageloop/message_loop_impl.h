@@ -8,12 +8,14 @@
 #include <memory>
 #include <functional>
 #include <cstdint>
+#include <atomic>
 #include "macros.h"
 #include "time/time_point.h"
+#include "message_loop_task_queues.h"
 
 namespace ffbase {
 
-class MessageLoopImpl {
+class MessageLoopImpl : public Wakeable {
 public:
     static std::shared_ptr<MessageLoopImpl>Create();
     virtual ~MessageLoopImpl();
@@ -25,14 +27,25 @@ public:
     void AddTaskObserver(intptr_t key, std::function<void()> callback);
     void RemoveTaskObserver(intptr_t key);
     
+    
     void DoRun();
     void DoTerminate();
     
+    virtual TaskQueueId GetTaskQueueId() const;
+    
 protected:
+    friend class MessageLoop;
+    void RunExpiredTasksNow();
+    void RunSingleExpiredTaskNow();
     MessageLoopImpl();
     
 private:
+    std::shared_ptr<MessageLoopTaskQueues> task_queues_;
+    TaskQueueId queue_id_;
     std::atomic_bool terminated_;
+    
+    void FlushTasks(FlushType type);
+    
     FF_DISALLOW_COPY_AND_ASSIGN(MessageLoopImpl);
 };
 

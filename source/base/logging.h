@@ -57,7 +57,7 @@ int GetMinLogLevel();
 }// namespace ffbase
 
 #define FF_LOG_STREAM(level) \
-    ::ffbase::LogMessage(::fml::LOG_##level, __FILE__, __LINE__, nullptr).stream()
+    ::ffbase::LogMessage(::ffbase::LOG_##level, __FILE__, __LINE__, nullptr).stream()
 
 #define FF_LAZY_STREAM(stream, condition) \
     !(condition) ? (void)0 : ::ffbase::LogMessageVoidify() & (stream)

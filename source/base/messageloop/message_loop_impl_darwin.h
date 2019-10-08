@@ -1,17 +1,35 @@
 //
-// Created by zhongzhendong on 2019/10/4.
+// Created by zerdzhong on 2019/10/4.
 //
 
-#ifndef FFNETWORK_MESSAGE_LOOP_IMPL_DARWIN_H
-#define FFNETWORK_MESSAGE_LOOP_IMPL_DARWIN_H
+#ifndef FFBASE_MESSAGE_LOOP_IMPL_DARWIN_H
+#define FFBASE_MESSAGE_LOOP_IMPL_DARWIN_H
 
+#include <CoreFoundation/CoreFoundation.h>
+#include <atomic>
 
-class message_loop_impl_darwin {
+#include "message_loop_impl.h"
+#include "macros.h"
+
+namespace ffbase {
+
+class MessageLoopDarwin : public MessageLoopImpl {
 public:
-    message_loop_impl_darwin();
+    MessageLoopDarwin();
+    ~MessageLoopDarwin() override;
+    
+private:
+    std::atomic_bool running_;
+    
+    void Run() override;
+    void Terminate() override;
+    
+    void WakeUp(TimePoint time_point) override;
 
-    ~message_loop_impl_darwin();
+    FF_DISALLOW_COPY_AND_ASSIGN(MessageLoopDarwin);
 };
 
+}
 
-#endif //FFNETWORK_MESSAGE_LOOP_IMPL_DARWIN_H
+
+#endif //FFBASE_MESSAGE_LOOP_IMPL_DARWIN_H

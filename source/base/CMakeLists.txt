@@ -25,6 +25,8 @@ set(FFBASE_SOURCE_FILES
         messageloop/message_loop_impl.h
         messageloop/message_loop_task_queues.cpp
         messageloop/message_loop_task_queues.h
+        messageloop/delayed_task.cpp
+        messageloop/delayed_task.h
         thread/thread_local.h
         thread/thread_local.cpp)
 
@@ -48,13 +50,13 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    target_compile_definitions(ffnetwork PRIVATE WIN)
+    target_compile_definitions(ffbase PRIVATE WIN)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Android")
-    target_compile_definitions(ffnetwork PRIVATE ANDROID)
+    target_compile_definitions(ffbase PRIVATE ANDROID)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    target_compile_definitions(ffnetwork PRIVATE LINUX)
+    target_compile_definitions(ffbase PRIVATE LINUX)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    target_compile_definitions(ffnetwork PRIVATE MAC)
+    target_compile_definitions(ffbase PRIVATE MAC)
 endif ()
 
 target_include_directories(ffbase PUBLIC ${CMAKE_CURRENT_LIST_DIR})
