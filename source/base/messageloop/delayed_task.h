@@ -7,6 +7,7 @@
 
 #include "time/time_point.h"
 #include <queue>
+#include <functional>
 
 namespace ffbase {
 

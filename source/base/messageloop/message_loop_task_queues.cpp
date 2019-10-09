@@ -4,6 +4,7 @@
 
 #include "message_loop_task_queues.h"
 #include "logging.h"
+#include <climits>
 
 namespace ffbase {
 
