@@ -8,6 +8,8 @@
 
 #ifdef MAC
 #include "message_loop_impl_darwin.h"
+#elif defined(LINUX)
+#include "message_loop_impl_linux.h"
 #endif
 
 namespace ffbase {
@@ -15,6 +17,8 @@ namespace ffbase {
 std::shared_ptr<MessageLoopImpl> MessageLoopImpl::Create() {
 #ifdef MAC
     return std::make_shared<MessageLoopDarwin>();
+#elif defined(LINUX)
+    return std::make_shared<MessageLoopImplLinux>();
 #endif
     return nullptr;
 }

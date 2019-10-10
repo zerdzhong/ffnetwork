@@ -34,6 +34,10 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(FFBASE_SOURCE_FILES ${FFBASE_SOURCE_FILES}
             messageloop/message_loop_impl_darwin.h
             messageloop/message_loop_impl_darwin.mm)
+elseif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    set(FFBASE_SOURCE_FILES ${FFBASE_SOURCE_FILES}
+            messageloop/message_loop_impl_linux.h
+            messageloop/message_loop_impl_linux.cpp)
 endif ()
     
 set(FFBASE_HEADER_FILES )
