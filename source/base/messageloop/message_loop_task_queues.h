@@ -8,10 +8,12 @@
 #include "macros.h"
 #include "time/time_point.h"
 #include "thread/mutex.h"
+#include "delayed_task.h"
 #include <map>
 #include <mutex>
 #include <vector>
 #include <memory>
+#include <atomic>
 #include <utility>
 #include <cstdint>
 #include <functional>
@@ -30,6 +32,24 @@ private:
 
 static const TaskQueueId _kUnmerged = TaskQueueId(TaskQueueId::kUnmerged);
 
+class Wakeable {
+public:
+    virtual ~Wakeable() {}
+    virtual void WakeUp(TimePoint timepoint) = 0;
+};
+
+class TaskQueueEntry {
+public:
+    using TaskObservers = std::map<intptr_t, closure>;
+    TaskObservers task_observers;
+    DelayedTaskQueue delayed_tasks;
+    Wakeable* wakeable;
+    
+    TaskQueueEntry();
+private:
+    FF_DISALLOW_COPY_AND_ASSIGN(TaskQueueEntry);
+};
+
 enum class FlushType {
   kSingle,
   kAll,
@@ -45,22 +65,24 @@ public:
     void Dispose(TaskQueueId queue_id);
     void DisposeTasks(TaskQueueId queue_id);
     
+    ~MessageLoopTaskQueues();
+    
     //Task
-    void RegisterTask(TaskQueueId queue_id, std::function<void()> task, TimePoint target_time);
+    void RegisterTask(TaskQueueId queue_id, closure task, TimePoint target_time);
     bool HasPendingTask(TaskQueueId queue_id) const;
-    void GetTasksToRunNow(TaskQueueId queue_id, FlushType type, std::vector<std::function<void()>> invocations);
+    void GetTasksToRunNow(TaskQueueId queue_id, FlushType type, std::vector<closure> invocations);
     size_t GetNumPendingTasks(TaskQueueId queue_id) const;
     
     //Observer
-    void AddTaskObserver(TaskQueueId queue_id, intptr_t key, std::function<void()> callback);
+    void AddTaskObserver(TaskQueueId queue_id, intptr_t key, closure callback);
     void RemoveTaskObserver(TaskQueueId quque_id, intptr_t key);
-    std::vector<std::function<void()>>GetObserversToNotify(TaskQueueId queue_id) const;
+    std::vector<closure>GetObserversToNotify(TaskQueueId queue_id) const;
     
     //
+    void SetWakeable(TaskQueueId queue_id, Wakeable* wakeable);
     
 private:
     MessageLoopTaskQueues();
-    ~MessageLoopTaskQueues();
     
     using Mutexes = std::vector<std::unique_ptr<std::mutex>>;
     
@@ -68,13 +90,15 @@ private:
     std::mutex& GetMutex(TaskQueueId queue_id) const;
     
     bool HasPendingTasksUnlocked(TaskQueueId queue_id) const;
+    const DelayedTask& PeekNextTaskUnlocked(TaskQueueId owner_id, TaskQueueId& top_queue_id) const;
 
     TimePoint GetNextWakeTimeUnlocked(TaskQueueId queue_id) const;
 
     static std::mutex creation_mutex_;
-    static MessageLoopTaskQueues* instance_;
+    static MessageLoopTaskQueues* instance_ FF_GUARDED_BY(creation_mutex_);
     
     std::unique_ptr<SharedMutex> queue_meta_mutex_;
+    std::map<TaskQueueId, std::unique_ptr<TaskQueueEntry>> queue_entries_;
     std::map<TaskQueueId, std::unique_ptr<std::mutex>> queue_locks_;
 
     size_t task_queue_id_counter_;

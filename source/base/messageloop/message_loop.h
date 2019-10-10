@@ -14,6 +14,7 @@ namespace ffbase {
 
 class TaskRunner;
 class MessageLoopImpl;
+class TaskQueueId;
 
 class MessageLoop {
 public:
@@ -24,23 +25,28 @@ public:
     void AddTaskObserver(intptr_t key, std::function<void()> callback);
     void RemoveObserver(intptr_t key);
     
+    void RunExpiredTasksNow();
+    
     std::shared_ptr<TaskRunner> GetTaskRunner() const;
     
     static void EnsureInitializedForCurrentThread();
     static bool IsInitializedForCurrentThread();
+    static TaskQueueId GetCurrentTaskQueueId();
 
     ~MessageLoop();
     
 private:
-    std::shared_ptr<TaskRunner> task_runner_;
+    friend MessageLoopImpl;
+    friend TaskRunner;
+    
     std::shared_ptr<MessageLoopImpl> loop_;
+    std::shared_ptr<TaskRunner> task_runner_;
     
     MessageLoop();
     
     std::shared_ptr<MessageLoopImpl> GetLoopImpl() const;
     
     FF_DISALLOW_COPY_AND_ASSIGN(MessageLoop);
-    
 };
 
 }
