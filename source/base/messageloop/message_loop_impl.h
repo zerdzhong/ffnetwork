@@ -27,7 +27,6 @@ public:
     void AddTaskObserver(intptr_t key, std::function<void()> callback);
     void RemoveTaskObserver(intptr_t key);
     
-    
     void DoRun();
     void DoTerminate();
     

@@ -65,12 +65,13 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
     find_library(CoreFoundationLib CoreFoundation)
+    find_library(FoundationLib Foundation)
 
     if (NOT CoreFoundationLib)
         message(FATAL_ERROR "CoreFoundation not found")
     endif ()
 
-    target_link_libraries(ffbase PRIVATE ${CoreFoundationLib})
+    target_link_libraries(ffbase PRIVATE ${CoreFoundationLib} ${FoundationLib})
     target_compile_definitions(ffbase PRIVATE MAC)
 endif ()
 

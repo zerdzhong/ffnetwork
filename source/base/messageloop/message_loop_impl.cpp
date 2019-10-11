@@ -87,6 +87,14 @@ void MessageLoopImpl::DoTerminate() {
     Terminate();
 }
 
+void MessageLoopImpl::RunExpiredTasksNow() {
+    FlushTasks(FlushType::kAll);
+}
+
+void MessageLoopImpl::RunSingleExpiredTaskNow() {
+    FlushTasks(FlushType::kSingle);
+}
+
 void MessageLoopImpl::FlushTasks(FlushType type) {
     std::vector<closure> invocations;
     
@@ -100,14 +108,6 @@ void MessageLoopImpl::FlushTasks(FlushType type) {
             observer();
         }
     }
-}
-
-void MessageLoopImpl::RunExpiredTasksNow() {
-    FlushTasks(FlushType::kAll);
-}
-
-void MessageLoopImpl::RunSingleExpiredTaskNow() {
-    FlushTasks(FlushType::kSingle);
 }
 
 TaskQueueId MessageLoopImpl::GetTaskQueueId() const {
