@@ -6,6 +6,7 @@
 #define FFBASE_MESSAGE_LOOP_H
 
 #include "macros.h"
+#include "task_runner.h"
 #include <cstdint>
 #include <memory>
 #include <functional>

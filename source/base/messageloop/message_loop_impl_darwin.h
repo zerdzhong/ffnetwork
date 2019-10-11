@@ -10,6 +10,7 @@
 
 #include "message_loop_impl.h"
 #include "macros.h"
+#include "platform/darwin/cf_reference_utils.h"
 
 namespace ffbase {
 
@@ -21,10 +22,15 @@ public:
 private:
     std::atomic_bool running_;
     
+    CFRef<CFRunLoopRef> loop_;
+    CFRef<CFRunLoopTimerRef> delay_wake_timer_;
+    
     void Run() override;
     void Terminate() override;
     
     void WakeUp(TimePoint time_point) override;
+    
+    static void OnTimerFire(CFRunLoopTimerRef timer, MessageLoopDarwin* loop);
 
     FF_DISALLOW_COPY_AND_ASSIGN(MessageLoopDarwin);
 };

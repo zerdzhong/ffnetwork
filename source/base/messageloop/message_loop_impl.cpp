@@ -30,7 +30,7 @@ task_queues_(MessageLoopTaskQueues::GetInstance()),
 queue_id_(task_queues_->CreateTaskQueue()),
 terminated_(false)
 {
-    
+    task_queues_->SetWakeable(queue_id_, this);
 }
 
 MessageLoopImpl::~MessageLoopImpl() {

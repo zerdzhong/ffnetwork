@@ -33,7 +33,10 @@ set(FFBASE_SOURCE_FILES
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(FFBASE_SOURCE_FILES ${FFBASE_SOURCE_FILES}
             messageloop/message_loop_impl_darwin.h
-            messageloop/message_loop_impl_darwin.mm)
+            messageloop/message_loop_impl_darwin.mm
+            platform/darwin/cf_reference_utils.mm
+            platform/darwin/cf_reference_utils.h)
+
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(FFBASE_SOURCE_FILES ${FFBASE_SOURCE_FILES}
             messageloop/message_loop_impl_linux.h
@@ -60,6 +63,14 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Android")
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     target_compile_definitions(ffbase PRIVATE LINUX)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+
+    find_library(CoreFoundationLib CoreFoundation)
+
+    if (NOT CoreFoundationLib)
+        message(FATAL_ERROR "CoreFoundation not found")
+    endif ()
+
+    target_link_libraries(ffbase PRIVATE ${CoreFoundationLib})
     target_compile_definitions(ffbase PRIVATE MAC)
 endif ()
 
