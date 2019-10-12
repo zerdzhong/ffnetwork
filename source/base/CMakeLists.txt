@@ -28,7 +28,8 @@ set(FFBASE_SOURCE_FILES
         messageloop/delayed_task.cpp
         messageloop/delayed_task.h
         thread/thread_local.h
-        thread/thread_local.cpp unique_object.h)
+        thread/thread_local.cpp 
+        unique_object.h)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(FFBASE_SOURCE_FILES ${FFBASE_SOURCE_FILES}
@@ -40,7 +41,10 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(FFBASE_SOURCE_FILES ${FFBASE_SOURCE_FILES}
             messageloop/message_loop_impl_linux.h
-            messageloop/message_loop_impl_linux.cpp)
+            messageloop/message_loop_impl_linux.cpp
+            platform/linux/timerfd.h
+            platform/linux/timerfd.cpp
+            )
 endif ()
     
 set(FFBASE_HEADER_FILES )

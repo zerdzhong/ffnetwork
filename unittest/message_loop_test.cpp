@@ -16,7 +16,7 @@ TEST(MessageLoop, GetCurrent) {
         MessageLoop::EnsureInitializedForCurrentThread();
         ASSERT_TRUE(MessageLoop::GetCurrent().GetTaskRunner());
     });
-    
+
     thread.join();
 }
 
@@ -30,7 +30,7 @@ TEST(MessageLoop, NonDelayedTasksAreRunInOrder) {
     size_t current = 0;
     for (size_t i = 0; i < count; i++) {
       loop.GetTaskRunner()->PostTask(
-          PLATFORM_SPECIFIC_CAPTURE(&terminated, i, &current)() {
+          PLATFORM_SPECIFIC_CAPTURE(&terminated, i, &current, count)() {
             ASSERT_EQ(current, i);
             current++;
             if (count == i + 1) {
@@ -60,7 +60,7 @@ TEST(MessageLoop, DelayedTasksAtSameTimeAreRunInOrder) {
         TimePoint::Now() + TimeDelta::FromMilliseconds(2);
     for (size_t i = 0; i < count; i++) {
       loop.GetTaskRunner()->PostTaskForTime(
-          PLATFORM_SPECIFIC_CAPTURE(&terminated, i, &current)() {
+          PLATFORM_SPECIFIC_CAPTURE(&terminated, i, &current, count)() {
             ASSERT_EQ(current, i);
             current++;
             if (count == i + 1) {
