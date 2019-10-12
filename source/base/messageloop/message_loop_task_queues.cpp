@@ -60,7 +60,8 @@ MessageLoopTaskQueues::~MessageLoopTaskQueues() {
 }
 
 void MessageLoopTaskQueues::Dispose(TaskQueueId queue_id) {
-    
+    ScopedMutex queue_lock(GetMutex(queue_id));
+    queue_entries_.erase(queue_id);
 }
 
 void MessageLoopTaskQueues::DisposeTasks(TaskQueueId queue_id) {
@@ -104,7 +105,7 @@ void MessageLoopTaskQueues::GetTasksToRunNow(TaskQueueId queue_id, FlushType typ
             break;
         }
         
-        invocations.emplace_back(std::move(top_task.GetTask()));
+        invocations.emplace_back(top_task.GetTask());
         queue_entries_[top_queue_id]->delayed_tasks.pop();
         if (FlushType::kSingle == type) {
             break;
@@ -178,12 +179,9 @@ void MessageLoopTaskQueues::WakeUpUnlocked(TaskQueueId queue_id, TimePoint time)
 
 bool MessageLoopTaskQueues::HasPendingTasksUnlocked(TaskQueueId queue_id) const {
     const auto& queue_entry = queue_entries_.at(queue_id);
-    
-    if (!queue_entry->delayed_tasks.empty()) {
-        return true;
-    }
-    
-    return false;
+
+    return !queue_entry->delayed_tasks.empty();
+
 }
 
 TimePoint MessageLoopTaskQueues::GetNextWakeTimeUnlocked(TaskQueueId queue_id) const {
