@@ -28,16 +28,23 @@ set(FFBASE_SOURCE_FILES
         messageloop/delayed_task.cpp
         messageloop/delayed_task.h
         thread/thread_local.h
-        thread/thread_local.cpp)
+        thread/thread_local.cpp 
+        unique_object.h)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(FFBASE_SOURCE_FILES ${FFBASE_SOURCE_FILES}
             messageloop/message_loop_impl_darwin.h
-            messageloop/message_loop_impl_darwin.mm)
+            messageloop/message_loop_impl_darwin.mm
+            platform/darwin/cf_reference_utils.mm
+            platform/darwin/cf_reference_utils.h unique_fd.h)
+
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(FFBASE_SOURCE_FILES ${FFBASE_SOURCE_FILES}
             messageloop/message_loop_impl_linux.h
-            messageloop/message_loop_impl_linux.cpp)
+            messageloop/message_loop_impl_linux.cpp
+            platform/linux/timerfd.h
+            platform/linux/timerfd.cpp
+            )
 endif ()
     
 set(FFBASE_HEADER_FILES )
@@ -60,6 +67,15 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Android")
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     target_compile_definitions(ffbase PRIVATE LINUX)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+
+    find_library(CoreFoundationLib CoreFoundation)
+    find_library(FoundationLib Foundation)
+
+    if (NOT CoreFoundationLib)
+        message(FATAL_ERROR "CoreFoundation not found")
+    endif ()
+
+    target_link_libraries(ffbase PRIVATE ${CoreFoundationLib} ${FoundationLib})
     target_compile_definitions(ffbase PRIVATE MAC)
 endif ()
 

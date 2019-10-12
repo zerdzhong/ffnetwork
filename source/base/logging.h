@@ -37,7 +37,6 @@ private:
     std::ostringstream stream_;
     const LogLevel level_;
     const char* file_;
-    const char* condition_;
     int line_;
     
     FF_DISALLOW_COPY_AND_ASSIGN(LogMessage);
@@ -77,7 +76,7 @@ int GetMinLogLevel();
     .stream(), !(condition))
 
 #ifndef DEBUG
-    #define FF_DLOG(severity) FF_LOG(severity)
+    #define FF_DLOG(level) FF_LOG(level)
     #define FF_DCHECK(condition) FF_CHECK(condition)
 #else
     #define FF_DLOG(severity) FF_EAT_STREAM_PARAMETERS(true)

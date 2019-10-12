@@ -70,7 +70,7 @@ public:
     //Task
     void RegisterTask(TaskQueueId queue_id, closure task, TimePoint target_time);
     bool HasPendingTask(TaskQueueId queue_id) const;
-    void GetTasksToRunNow(TaskQueueId queue_id, FlushType type, std::vector<closure> invocations);
+    void GetTasksToRunNow(TaskQueueId queue_id, FlushType type, std::vector<closure>& invocations);
     size_t GetNumPendingTasks(TaskQueueId queue_id) const;
     
     //Observer

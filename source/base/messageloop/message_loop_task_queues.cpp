@@ -48,13 +48,16 @@ TaskQueueId MessageLoopTaskQueues::CreateTaskQueue() {
 }
 
 MessageLoopTaskQueues::MessageLoopTaskQueues() :
+queue_meta_mutex_(std::unique_ptr<SharedMutex>(SharedMutex::Create())),
 task_queue_id_counter_(0),
 order_(0)
 {
-    queue_meta_mutex_ = std::unique_ptr<SharedMutex>(SharedMutex::Create());
+    FF_DLOG(INFO)<<"MessageLoopTaskQueues()"<<std::endl;
 }
 
-MessageLoopTaskQueues::~MessageLoopTaskQueues() = default;
+MessageLoopTaskQueues::~MessageLoopTaskQueues() {
+    FF_DLOG(INFO)<<"~MessageLoopTaskQueues()"<<std::endl;
+}
 
 void MessageLoopTaskQueues::Dispose(TaskQueueId queue_id) {
     
@@ -84,7 +87,7 @@ bool MessageLoopTaskQueues::HasPendingTask(TaskQueueId queue_id) const {
     return HasPendingTasksUnlocked(queue_id);
 }
 
-void MessageLoopTaskQueues::GetTasksToRunNow(TaskQueueId queue_id, FlushType type, std::vector<std::function<void()>> invocations) {
+void MessageLoopTaskQueues::GetTasksToRunNow(TaskQueueId queue_id, FlushType type, std::vector<std::function<void()>>& invocations) {
     ScopedMutex queue_lock(GetMutex(queue_id));
     
     if (!HasPendingTasksUnlocked(queue_id)) {

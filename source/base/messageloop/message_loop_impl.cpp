@@ -30,7 +30,7 @@ task_queues_(MessageLoopTaskQueues::GetInstance()),
 queue_id_(task_queues_->CreateTaskQueue()),
 terminated_(false)
 {
-    
+    task_queues_->SetWakeable(queue_id_, this);
 }
 
 MessageLoopImpl::~MessageLoopImpl() {
@@ -87,6 +87,14 @@ void MessageLoopImpl::DoTerminate() {
     Terminate();
 }
 
+void MessageLoopImpl::RunExpiredTasksNow() {
+    FlushTasks(FlushType::kAll);
+}
+
+void MessageLoopImpl::RunSingleExpiredTaskNow() {
+    FlushTasks(FlushType::kSingle);
+}
+
 void MessageLoopImpl::FlushTasks(FlushType type) {
     std::vector<closure> invocations;
     
@@ -100,14 +108,6 @@ void MessageLoopImpl::FlushTasks(FlushType type) {
             observer();
         }
     }
-}
-
-void MessageLoopImpl::RunExpiredTasksNow() {
-    FlushTasks(FlushType::kAll);
-}
-
-void MessageLoopImpl::RunSingleExpiredTaskNow() {
-    FlushTasks(FlushType::kSingle);
 }
 
 TaskQueueId MessageLoopImpl::GetTaskQueueId() const {

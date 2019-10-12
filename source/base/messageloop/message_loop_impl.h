@@ -27,7 +27,6 @@ public:
     void AddTaskObserver(intptr_t key, std::function<void()> callback);
     void RemoveTaskObserver(intptr_t key);
     
-    
     void DoRun();
     void DoTerminate();
     
@@ -40,7 +39,7 @@ protected:
     MessageLoopImpl();
     
 private:
-    std::shared_ptr<MessageLoopTaskQueues> task_queues_;
+    MessageLoopTaskQueues* task_queues_;
     TaskQueueId queue_id_;
     std::atomic_bool terminated_;
     
