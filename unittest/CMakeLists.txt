@@ -17,18 +17,19 @@ set(SOURCE_FILES
         thread_test.cpp 
         gunit.h
         callback_test.cpp
-        curl_client_test.cpp base_message_test.cpp base_time_delta_test.cpp base_time_test.cpp thread_local_test.cpp message_loop_task_queues_test.cpp message_loop_test.cpp)
+        curl_client_test.cpp
+        )
 
-add_executable(unittest ${SOURCE_FILES})
-target_link_libraries(unittest gmock_main ffnetwork)
+add_executable(ffnetwork_unittest ${SOURCE_FILES})
+target_link_libraries(ffnetwork_unittest gmock_main ffnetwork)
 
-target_include_directories(unittest
+target_include_directories(ffnetwork_unittest
         PRIVATE
         "${FFNETWORK_INCLUDE_DIRECTORY}"
         ${CMAKE_CURRENT_LIST_DIR}/../source
 )
 
-add_test(NAME ffnetwork_unittest COMMAND unittest)
+add_test(NAME ffnetwork_unittest COMMAND ffnetwork_unittest)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set(CMAKE_OSX_DEPLOYMENT_TARGET "10.10" CACHE STRING "Minimum OS X deployment version")

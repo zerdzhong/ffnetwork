@@ -58,6 +58,8 @@ endif()
 
 if(CMAKE_BUILD_TYPE MATCHES Debug)
     target_compile_definitions(ffbase PUBLIC -DDebug)
+
+    add_subdirectory(tests)
 endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")

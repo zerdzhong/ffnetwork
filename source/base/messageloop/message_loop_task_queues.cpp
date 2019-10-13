@@ -52,12 +52,10 @@ queue_meta_mutex_(std::unique_ptr<SharedMutex>(SharedMutex::Create())),
 task_queue_id_counter_(0),
 order_(0)
 {
-    FF_DLOG(INFO)<<"MessageLoopTaskQueues()"<<std::endl;
+
 }
 
-MessageLoopTaskQueues::~MessageLoopTaskQueues() {
-    FF_DLOG(INFO)<<"~MessageLoopTaskQueues()"<<std::endl;
-}
+MessageLoopTaskQueues::~MessageLoopTaskQueues() = default;
 
 void MessageLoopTaskQueues::Dispose(TaskQueueId queue_id) {
     ScopedMutex queue_lock(GetMutex(queue_id));
@@ -65,6 +63,9 @@ void MessageLoopTaskQueues::Dispose(TaskQueueId queue_id) {
 }
 
 void MessageLoopTaskQueues::DisposeTasks(TaskQueueId queue_id) {
+    ScopedMutex queue_lock(GetMutex(queue_id));
+    const auto& queue = queue_entries_.at(queue_id);
+    queue->delayed_tasks = {};
 }
 
 #pragma mark- task_method
