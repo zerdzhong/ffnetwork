@@ -7,6 +7,7 @@
 #include "time/time_point.h"
 #include "logging.h"
 #include <thread>
+#include <condition_variable>
 
 #define PLATFORM_SPECIFIC_CAPTURE(...) [__VA_ARGS__]
 
