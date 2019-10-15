@@ -8,7 +8,9 @@
 #include "logging.h"
 #include <pthread.h>
 
-
+#if LINUX || ANDROID
+#include <sys/prctl.h>
+#endif
 
 namespace ffbase {
 
@@ -63,12 +65,12 @@ void Thread::SetCurrentThreadName(const std::string& name) {
       return;
   }
 #if MAC
-  pthread_setname_np(name.c_str());
+    pthread_setname_np(name.c_str());
 #elif LINUX || ANDROID
-  pthread_setname_np(pthread_self(), name.c_str());
+    prctl(PR_SET_NAME, reinterpret_cast<unsigned long>(name.c_str()));
 #else
-  FF_DLOG(INFO) << "Could not set the thread name to '" << name
-                 << "' on this platform.";
+    FF_DLOG(INFO) << "Could not set the thread name to '" << name
+                  << "' on this platform.";
 #endif
 }
 

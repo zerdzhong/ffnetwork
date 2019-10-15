@@ -3,7 +3,7 @@
 //
 
 #include "gtest/gtest.h"
-
+#include <pthread.h>
 #define private public
 #include "base/thread/thread.h"
 #undef private
@@ -16,13 +16,15 @@ TEST(Thread, Basic) {
 }
 
 TEST(Thread, SetName) {
-    std::string set_name = "test-thread-name";
+    std::string set_name = "test-name";
     Thread thread(set_name);
     EXPECT_EQ(thread.GetName(), set_name);
     thread.GetTaskRunner()->PostTask([&set_name] {
-        char* pthread_name = (char *)malloc(set_name.length() + 1);
-        pthread_getname_np(pthread_self(), pthread_name, set_name.length()+1);
-        EXPECT_EQ(std::string(pthread_name), set_name);
+        char pthread_name[16];
+        memset(pthread_name, 0x00, 16);
+        pthread_getname_np(pthread_self(), pthread_name, 16);
+        std::string thread_name_str(pthread_name);
+        EXPECT_EQ(thread_name_str, set_name);
     });
 }
 
