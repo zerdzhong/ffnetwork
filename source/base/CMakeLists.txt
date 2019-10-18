@@ -29,7 +29,12 @@ set(FFBASE_SOURCE_FILES
         messageloop/delayed_task.h
         thread/thread_local.h
         thread/thread_local.cpp 
-        unique_object.h)
+        unique_object.h
+        thread/waitable_event.cpp
+        thread/waitable_event.h
+        thread/thread.h
+        thread/thread.cpp
+        )
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(FFBASE_SOURCE_FILES ${FFBASE_SOURCE_FILES}
@@ -58,6 +63,8 @@ endif()
 
 if(CMAKE_BUILD_TYPE MATCHES Debug)
     target_compile_definitions(ffbase PUBLIC -DDebug)
+
+    add_subdirectory(tests)
 endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")

@@ -34,7 +34,7 @@ terminated_(false)
 }
 
 MessageLoopImpl::~MessageLoopImpl() {
-    
+    task_queues_->Dispose(queue_id_);
 }
 
 #pragma mark- task_method

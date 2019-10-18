@@ -24,9 +24,9 @@ public:
     
     virtual bool RunTasksOnCurrentThread();
 
-    TaskRunner(std::shared_ptr<MessageLoopImpl> loop);
+    explicit TaskRunner(std::shared_ptr<MessageLoopImpl> loop);
     
-    static void RunNowOrPostTask(std::shared_ptr<TaskRunner> runner, closure task);
+    static void RunNowOrPostTask(const std::shared_ptr<TaskRunner>& runner, closure task);
     
 private:
     std::shared_ptr<MessageLoopImpl> loop_;

@@ -11,6 +11,10 @@ CTEST_OUTPUT_ON_FAILURE=1 make unittest
 cd unittest
 ctest --verbose
 
+cd -
+cd ./source/base/tests/
+ctest --verbose
+
 set +e
 #disable exit on non 0
 make ffnetwork_coverage || true
