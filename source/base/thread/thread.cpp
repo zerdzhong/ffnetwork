@@ -40,6 +40,32 @@ Thread::~Thread() {
 }
 
 #pragma mark- public_method
+
+void Thread::Start(closure thread_func) {
+
+
+    AutoResetWaitableEvent ev;
+    std::shared_ptr<TaskRunner> task_runner;
+    std::string thread_name = name_;
+
+    if (!thread_func) {
+        thread_func = [&ev, &task_runner, thread_name]{
+            SetCurrentThreadName(thread_name);
+            MessageLoop::EnsureInitializedForCurrentThread();
+            auto& loop = MessageLoop::GetCurrent();
+            task_runner = loop.GetTaskRunner();
+            ev.Signal();
+            loop.Run();
+        };
+    }
+
+
+    thread_ = std::unique_ptr<std::thread>(new std::thread(thread_func));
+
+    ev.Wait();
+    task_runner_ = task_runner;
+}
+
 void Thread::Join() {
     if (joined_) {
         return;
@@ -61,7 +87,7 @@ std::string Thread::GetName() const {
 }
 
 void Thread::SetCurrentThreadName(const std::string& name) {
-  if (name == "") {
+  if (name.empty()) {
       return;
   }
 #if MAC

@@ -22,6 +22,62 @@ TEST(MessageLoop, GetCurrent) {
     thread.join();
 }
 
+TEST(MessageLoop, CanRunForTime) {
+    bool started = false;
+    bool terminated = false;
+    std::thread thread([&started, &terminated]() {
+        MessageLoop::EnsureInitializedForCurrentThread();
+        auto& loop = MessageLoop::GetCurrent();
+        ASSERT_TRUE(loop.GetTaskRunner());
+        loop.GetTaskRunner()->PostTask([&terminated]() {
+            MessageLoop::GetCurrent().Terminate();
+            terminated = true;
+        });
+        loop.RunForTime(TimeDelta::FromSeconds(2));
+        started = true;
+    });
+    
+    thread.join();
+    ASSERT_TRUE(started);
+    ASSERT_TRUE(terminated);
+}
+
+TEST(MessageLoop, RunForTime) {
+    
+    bool run_task1 = false;
+    
+    std::condition_variable condition_var;
+    std::mutex mutex;
+    std::unique_lock<std::mutex> lock(mutex);
+        
+    std::thread thread([&condition_var, &run_task1]() {
+        MessageLoop::EnsureInitializedForCurrentThread();
+        auto& loop = MessageLoop::GetCurrent();
+        ASSERT_TRUE(loop.GetTaskRunner());
+        
+        auto begin = TimePoint::Now();
+        
+        loop.GetTaskRunner()->PostTask([&run_task1]() {
+            run_task1 = true;
+        });
+        
+        loop.RunForTime(TimeDelta::FromSecondsFloat(0.5));
+        
+        auto run_last = TimePoint::Now() - begin;
+        auto run_seconds = run_last.ToSecondsFloat();
+        
+        ASSERT_GE(run_seconds, 0.5);
+        ASSERT_LE(run_seconds, 0.6);
+        
+        condition_var.notify_one();
+    });
+    
+    condition_var.wait(lock);
+    ASSERT_EQ(run_task1, true);
+    thread.join();
+}
+
+
 TEST(MessageLoop, CanRunAndTerminate) {
     bool started = false;
     bool terminated = false;

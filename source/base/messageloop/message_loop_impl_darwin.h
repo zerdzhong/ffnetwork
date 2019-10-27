@@ -27,6 +27,7 @@ private:
     
     void Run() override;
     void Terminate() override;
+    void RunForTime(TimeDelta duration) override;
     
     void WakeUp(TimePoint time_point) override;
     

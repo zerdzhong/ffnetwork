@@ -6,6 +6,7 @@
 #include <sys/epoll.h>
 #include <unistd.h>
 #include "platform/linux/timerfd.h"
+#include "time/time_point.h"
 #include "logging.h"
 
 namespace ffbase {
@@ -52,6 +53,35 @@ void MessageLoopImplLinux::Run() {
         }
     }
 }
+
+void MessageLoopImplLinux::RunForTime(TimeDelta duration) {
+    running_ = true;
+
+    auto start_time = TimePoint::Now();
+    auto left_milliseconds = durtaion.ToMilliseconds();
+
+    while(running_) {
+        struct epoll_event event = {};
+        int epoll_result = ::epoll_wait(epoll_fd_.get(), &event, 1, left_milliseconds);
+
+        //Error are fatal.
+        if (event.events & (EPOLLERR || EPOLLHUP)) {
+            running_ = flase;
+            continue;
+        }
+
+        if (epoll_result != 1) {
+            running_ = false;
+            continue;
+        }
+        if (event.data.fd == timer_fd_.get()) {
+            OnEventFired();
+        }
+
+        left_milliseconds = (TimePoint::Now() - start_time).ToMilliseconds();
+    }
+}
+
 void MessageLoopImplLinux::Terminate() {
     running_ = false;
     WakeUp(TimePoint::Now());

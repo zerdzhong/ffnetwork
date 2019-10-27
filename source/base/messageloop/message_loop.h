@@ -6,6 +6,7 @@
 #define FFBASE_MESSAGE_LOOP_H
 
 #include "macros.h"
+#include "time/time_point.h"
 #include "task_runner.h"
 #include <cstdint>
 #include <memory>
@@ -22,6 +23,10 @@ public:
     static MessageLoop& GetCurrent();
     
     void Run();
+    void RunForTime(TimeDelta delay);
+    
+    bool IsRunning();
+    
     void Terminate();
     void AddTaskObserver(intptr_t key, std::function<void()> callback);
     void RemoveObserver(intptr_t key);

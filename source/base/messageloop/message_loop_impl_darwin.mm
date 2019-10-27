@@ -4,6 +4,7 @@
 
 #include "message_loop_impl_darwin.h"
 #include <CoreFoundation/CFRunLoop.h>
+#include "time/time_point.h"
 #include "logging.h"
 
 namespace ffbase {
@@ -39,22 +40,32 @@ MessageLoopDarwin::~MessageLoopDarwin() {
 }
 
 void MessageLoopDarwin::Run() {
+    RunForTime(TimeDelta::Max());
+}
+
+void MessageLoopDarwin::RunForTime(TimeDelta duration) {
     FF_CHECK(loop_ == CFRunLoopGetCurrent());
     
     running_ = true;
+    auto start_time = TimePoint::Now();
+    auto left_seconds = duration.ToSecondsFloat();
     
     while (running_) {
         @autoreleasepool {
-            int result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, kDistantFuture, YES);
-            if (result == kCFRunLoopRunStopped || result == kCFRunLoopRunFinished) {
+            int result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, left_seconds, YES);
+            if (result == kCFRunLoopRunStopped ||
+                result == kCFRunLoopRunFinished ||
+                result == kCFRunLoopRunTimedOut) {
                 @autoreleasepool {
                     RunExpiredTasksNow();
                 }
                 
                 running_ = false;
             }
+            left_seconds = (TimePoint::Now() - start_time).ToSecondsFloat();
         }
     }
+
 }
 
 void MessageLoopDarwin::Terminate() {

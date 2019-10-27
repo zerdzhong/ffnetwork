@@ -18,12 +18,13 @@ class Thread {
 public:
     explicit Thread(const std::string& name = "");
     ~Thread();
+
+    void Start(closure thread_func = nullptr);
     
     std::shared_ptr<TaskRunner> GetTaskRunner() const;
     void Join();
     
     static void SetCurrentThreadName(const std::string& name);
-    
     std::string GetName() const;
     
 private:
