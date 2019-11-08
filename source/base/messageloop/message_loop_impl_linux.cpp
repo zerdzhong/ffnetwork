@@ -38,7 +38,7 @@ void MessageLoopImplLinux::RunForTime(TimeDelta duration) {
     auto start_time = TimePoint::Now();
     auto left_milliseconds = duration.ToMilliseconds();
 
-    while(running_ && left_milliseconds > 0) {
+    while(running_) {
         struct epoll_event event = {};
         int epoll_result = ::epoll_wait(epoll_fd_.get(), &event, 1, left_milliseconds);
 
@@ -58,6 +58,9 @@ void MessageLoopImplLinux::RunForTime(TimeDelta duration) {
         }
 
         left_milliseconds -= (TimePoint::Now() - start_time).ToMilliseconds();
+        if (left_milliseconds <= 0) {
+            running_ = false;
+        }
     }
 }
 

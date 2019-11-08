@@ -50,7 +50,7 @@ void MessageLoopDarwin::RunForTime(TimeDelta duration) {
     auto start_time = TimePoint::Now();
     auto left_seconds = duration.ToSecondsFloat();
     
-    while (running_ && left_seconds > 0) {
+    while (running_) {
         @autoreleasepool {
             int result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, left_seconds, YES);
             if (result == kCFRunLoopRunStopped ||
@@ -63,6 +63,9 @@ void MessageLoopDarwin::RunForTime(TimeDelta duration) {
                 running_ = false;
             }
             left_seconds -= (TimePoint::Now() - start_time).ToSecondsFloat();
+            if(left_seconds <= 0) {
+                running_ = false;
+            }
         }
     }
 
