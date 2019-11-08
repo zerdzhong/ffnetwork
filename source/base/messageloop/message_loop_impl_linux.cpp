@@ -8,6 +8,7 @@
 #include "platform/linux/timerfd.h"
 #include "time/time_point.h"
 #include "logging.h"
+#include <errno.h>
 
 namespace ffbase {
 
@@ -28,57 +29,35 @@ MessageLoopImplLinux::~MessageLoopImplLinux() {
 }
 
 void MessageLoopImplLinux::Run() {
-    running_ = true;
-
-    while (running_) {
-        struct epoll_event event = {};
-
-        int epoll_result = ::epoll_wait(epoll_fd_.get(), &event, 1, -1 /* timeout */);
-
-        // Errors are fatal.
-        if (event.events & (EPOLLERR | EPOLLHUP)) {
-            running_ = false;
-            continue;
-        }
-
-        // Timeouts are fatal since we specified an infinite timeout already.
-        // Likewise, > 1 is not possible since we waited for one result.
-        if (epoll_result != 1) {
-            running_ = false;
-            continue;
-        }
-
-        if (event.data.fd == timer_fd_.get()) {
-            OnEventFired();
-        }
-    }
+    RunForTime(TimeDelta::Max());
 }
 
 void MessageLoopImplLinux::RunForTime(TimeDelta duration) {
     running_ = true;
 
     auto start_time = TimePoint::Now();
-    auto left_milliseconds = durtaion.ToMilliseconds();
+    auto left_milliseconds = duration.ToMilliseconds();
 
-    while(running_) {
+    while(running_ && left_milliseconds > 0) {
         struct epoll_event event = {};
         int epoll_result = ::epoll_wait(epoll_fd_.get(), &event, 1, left_milliseconds);
 
         //Error are fatal.
-        if (event.events & (EPOLLERR || EPOLLHUP)) {
-            running_ = flase;
-            continue;
-        }
-
-        if (epoll_result != 1) {
+        if (event.events & (EPOLLERR | EPOLLHUP)) {
             running_ = false;
             continue;
         }
+
+        if (epoll_result != 1 && errno != EINTR) {
+            running_ = false;
+            continue;
+        }
+
         if (event.data.fd == timer_fd_.get()) {
             OnEventFired();
         }
 
-        left_milliseconds = (TimePoint::Now() - start_time).ToMilliseconds();
+        left_milliseconds -= (TimePoint::Now() - start_time).ToMilliseconds();
     }
 }
 
