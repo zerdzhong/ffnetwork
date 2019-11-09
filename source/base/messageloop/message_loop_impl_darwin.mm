@@ -56,13 +56,18 @@ void MessageLoopDarwin::RunForTime(TimeDelta duration) {
             if (result == kCFRunLoopRunStopped ||
                 result == kCFRunLoopRunFinished ||
                 result == kCFRunLoopRunTimedOut) {
+                
+                FF_LOG(INFO) << "runinmode return result "<< result;
+                
                 @autoreleasepool {
                     RunExpiredTasksNow();
                 }
                 
                 running_ = false;
             }
+            
             left_seconds -= (TimePoint::Now() - start_time).ToSecondsFloat();
+            FF_LOG(INFO) << "run left seconds "<< left_seconds;
             if(left_seconds <= 0) {
                 running_ = false;
             }
@@ -85,6 +90,7 @@ void MessageLoopDarwin::WakeUp(TimePoint time_point) {
 void MessageLoopDarwin::OnTimerFire(CFRunLoopTimerRef timer, MessageLoopDarwin* loop) {
     @autoreleasepool {
         // RunExpiredTasksNow rearms the timer as appropriate via a call to WakeUp.
+        FF_LOG(INFO) << "OnTimerFire";
         loop->RunExpiredTasksNow();
     }
 }
