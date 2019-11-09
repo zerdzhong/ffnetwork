@@ -77,14 +77,19 @@ void MessageLoopDarwin::RunForTime(TimeDelta duration) {
 }
 
 void MessageLoopDarwin::Terminate() {
+    FF_LOG(INFO) << "Terminate messageloop";
     running_ = false;
     CFRunLoopStop(loop_);
 }
 
 void MessageLoopDarwin::WakeUp(TimePoint time_point) {
-    CFRunLoopTimerSetNextFireDate(
-                                  delay_wake_timer_,
-                                  CFAbsoluteTimeGetCurrent() + (time_point - TimePoint::Now()).ToSecondsFloat());
+    auto wakeup_delay_seconds = (time_point - TimePoint::Now()).ToSecondsFloat();
+    if (wakeup_delay_seconds < 0) {
+        wakeup_delay_seconds = 0;
+    }
+    FF_LOG(INFO) << "Wakeup messageloop after "<< wakeup_delay_seconds << " seconds";
+    CFRunLoopTimerSetNextFireDate(delay_wake_timer_,
+                                  CFAbsoluteTimeGetCurrent() + wakeup_delay_seconds);
 }
 
 void MessageLoopDarwin::OnTimerFire(CFRunLoopTimerRef timer, MessageLoopDarwin* loop) {
