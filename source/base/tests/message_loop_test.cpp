@@ -213,12 +213,12 @@ TEST(MessageLoop, TimeSensitiveSingleDelayedTaskForTime) {
 
                     FF_LOG(INFO)<<"task delay 5ms actual delay " << ms << " ms";
 
-                    ASSERT_GE(ms, 3);
-                    ASSERT_LE(ms, 7);
+                    EXPECT_GE(ms, 10);
+                    EXPECT_LE(ms, 20);
                     checked = true;
                     MessageLoop::GetCurrent().Terminate();
                 },
-                TimePoint::Now() + TimeDelta::FromMilliseconds(5));
+                TimePoint::Now() + TimeDelta::FromMilliseconds(10));
         loop.Run();
     });
     thread.join();
