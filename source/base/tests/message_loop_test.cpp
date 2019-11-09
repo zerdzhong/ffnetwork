@@ -186,14 +186,14 @@ TEST(MessageLoop, TimeSensitiveSingleDelayedTaskByDelta) {
                     auto delta = TimePoint::Now() - begin;
                     auto ms = delta.ToMillisecondsFloat();
 
-                    FF_LOG(INFO)<<"task delay 5ms actual delay " << ms << " ms";
+                    FF_LOG(INFO)<<"task delay 50ms actual delay " << ms << " ms";
 
-                    ASSERT_GE(ms, 3);
-                    ASSERT_LE(ms, 7);
+                    ASSERT_GE(ms, 50);
+                    ASSERT_LE(ms, 80);
                     checked = true;
                     MessageLoop::GetCurrent().Terminate();
                 },
-                TimeDelta::FromMilliseconds(5));
+                TimeDelta::FromMilliseconds(50));
         loop.Run();
     });
     thread.join();
@@ -211,14 +211,14 @@ TEST(MessageLoop, TimeSensitiveSingleDelayedTaskForTime) {
                     auto delta = TimePoint::Now() - begin;
                     auto ms = delta.ToMillisecondsFloat();
 
-                    FF_LOG(INFO)<<"task delay 5ms actual delay " << ms << " ms";
+                    FF_LOG(INFO)<<"task delay 50ms actual delay " << ms << " ms";
 
-                    EXPECT_GE(ms, 10);
-                    EXPECT_LE(ms, 20);
+                    ASSERT_GE(ms, 50);
+                    ASSERT_LE(ms, 80);
                     checked = true;
                     MessageLoop::GetCurrent().Terminate();
                 },
-                TimePoint::Now() + TimeDelta::FromMilliseconds(10));
+                TimePoint::Now() + TimeDelta::FromMilliseconds(50));
         loop.Run();
     });
     thread.join();
@@ -237,14 +237,14 @@ TEST(MessageLoop, TimeSensitiveMultipleDelayedTasksWithIncreasingDeltas) {
                     PLATFORM_SPECIFIC_CAPTURE(begin, target_ms, &checked)() {
                         auto delta = TimePoint::Now() - begin;
                         auto ms = delta.ToMillisecondsFloat();
-                        ASSERT_GE(ms, target_ms - 2);
-                        ASSERT_LE(ms, target_ms + 2);
+                        ASSERT_GE(ms, target_ms * 20 - 20);
+                        ASSERT_LE(ms, target_ms * 20 + 20);
                         checked++;
                         if (checked == count) {
                             MessageLoop::GetCurrent().Terminate();
                         }
                     },
-                    TimeDelta::FromMilliseconds(target_ms));
+                    TimeDelta::FromMilliseconds(target_ms * 20));
         }
         loop.Run();
     });
