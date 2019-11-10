@@ -80,6 +80,11 @@ void MessageLoopTaskQueues::RegisterTask(TaskQueueId queue_id, std::function<voi
     
     TaskQueueId loop_to_wake = queue_id;
     
+    auto wakeup_delay_seconds = (queue_entry->delayed_tasks.top().GetTargetTime() - TimePoint::Now()).ToMilliseconds();
+    
+    FF_LOG(INFO) << "RegisterTask now " << TimePoint::Now().ToEpochDelta().ToMilliseconds()
+    <<" after "<< wakeup_delay_seconds << " ms";
+    
     WakeUpUnlocked(loop_to_wake, queue_entry->delayed_tasks.top().GetTargetTime());
 }
 

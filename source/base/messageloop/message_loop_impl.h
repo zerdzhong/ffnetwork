@@ -21,6 +21,7 @@ public:
     virtual ~MessageLoopImpl();
     
     virtual void Run() = 0;
+    virtual void RunForTime(TimeDelta duration) = 0;
     virtual void Terminate() = 0;
     
     void PostTask(std::function<void()> task, TimePoint target_time);
@@ -28,6 +29,7 @@ public:
     void RemoveTaskObserver(intptr_t key);
     
     void DoRun();
+    void DoRunForTime(TimeDelta delay);
     void DoTerminate();
     
     virtual TaskQueueId GetTaskQueueId() const;

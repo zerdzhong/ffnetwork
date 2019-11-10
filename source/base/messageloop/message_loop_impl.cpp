@@ -82,6 +82,17 @@ void MessageLoopImpl::DoRun() {
     task_queues_->DisposeTasks(queue_id_);
 }
 
+void MessageLoopImpl::DoRunForTime(TimeDelta delay) {
+    if (terminated_) {
+        return;
+    }
+    
+    RunForTime(delay);
+    
+    RunExpiredTasksNow();
+    task_queues_->DisposeTasks(queue_id_);
+}
+
 void MessageLoopImpl::DoTerminate() {
     terminated_ = true;
     Terminate();

@@ -6,7 +6,9 @@
 #include <sys/epoll.h>
 #include <unistd.h>
 #include "platform/linux/timerfd.h"
+#include "time/time_point.h"
 #include "logging.h"
+#include <errno.h>
 
 namespace ffbase {
 
@@ -27,22 +29,26 @@ MessageLoopImplLinux::~MessageLoopImplLinux() {
 }
 
 void MessageLoopImplLinux::Run() {
+    RunForTime(TimeDelta::Max());
+}
+
+void MessageLoopImplLinux::RunForTime(TimeDelta duration) {
     running_ = true;
 
-    while (running_) {
+    auto start_time = TimePoint::Now();
+    auto left_milliseconds = duration.ToMilliseconds();
+
+    while(running_) {
         struct epoll_event event = {};
+        int epoll_result = ::epoll_wait(epoll_fd_.get(), &event, 1, left_milliseconds);
 
-        int epoll_result = ::epoll_wait(epoll_fd_.get(), &event, 1, -1 /* timeout */);
-
-        // Errors are fatal.
+        //Error are fatal.
         if (event.events & (EPOLLERR | EPOLLHUP)) {
             running_ = false;
             continue;
         }
 
-        // Timeouts are fatal since we specified an infinite timeout already.
-        // Likewise, > 1 is not possible since we waited for one result.
-        if (epoll_result != 1) {
+        if (epoll_result != 1 && errno != EINTR) {
             running_ = false;
             continue;
         }
@@ -50,8 +56,14 @@ void MessageLoopImplLinux::Run() {
         if (event.data.fd == timer_fd_.get()) {
             OnEventFired();
         }
+
+        left_milliseconds -= (TimePoint::Now() - start_time).ToMilliseconds();
+        if (left_milliseconds <= 0) {
+            running_ = false;
+        }
     }
 }
+
 void MessageLoopImplLinux::Terminate() {
     running_ = false;
     WakeUp(TimePoint::Now());

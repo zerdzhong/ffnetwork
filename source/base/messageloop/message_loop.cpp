@@ -56,6 +56,14 @@ void MessageLoop::Run() {
     loop_->DoRun();
 }
 
+void MessageLoop::RunForTime(TimeDelta delay) {
+    loop_->DoRunForTime(delay);
+}
+
+bool MessageLoop::IsRunning() {
+    return true;
+}
+
 void MessageLoop::Terminate() {
     loop_->DoTerminate();
 }
