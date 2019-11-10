@@ -87,7 +87,8 @@ void MessageLoopDarwin::WakeUp(TimePoint time_point) {
     if (wakeup_delay_seconds < 0) {
         wakeup_delay_seconds = 0;
     }
-    FF_LOG(INFO) << "Wakeup messageloop after "<< wakeup_delay_seconds << " seconds";
+    FF_LOG(INFO) << "WakeUp nowtime " << TimePoint::Now().ToEpochDelta().ToMilliseconds()
+    <<" after "<< wakeup_delay_seconds << " seconds";
     CFRunLoopTimerSetNextFireDate(delay_wake_timer_,
                                   CFAbsoluteTimeGetCurrent() + wakeup_delay_seconds);
 }
@@ -95,7 +96,7 @@ void MessageLoopDarwin::WakeUp(TimePoint time_point) {
 void MessageLoopDarwin::OnTimerFire(CFRunLoopTimerRef timer, MessageLoopDarwin* loop) {
     @autoreleasepool {
         // RunExpiredTasksNow rearms the timer as appropriate via a call to WakeUp.
-        FF_LOG(INFO) << "OnTimerFire";
+        FF_LOG(INFO) << "OnTimerFire "<< TimePoint::Now().ToEpochDelta().ToMilliseconds();
         loop->RunExpiredTasksNow();
     }
 }
