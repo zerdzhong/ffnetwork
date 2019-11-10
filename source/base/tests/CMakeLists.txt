@@ -20,6 +20,10 @@ set(SOURCE_FILES
 
 add_executable(ffbase_unittest ${SOURCE_FILES})
 
+if (${UNITTEST_TIME_INSENSITIVE})
+    target_compile_definitions(ffbase_unittest PRIVATE -DUNITTEST_TIME_INSENSITIVE)
+endif ()
+
 target_link_libraries(ffbase_unittest gmock_main ffbase)
 
 target_include_directories(ffbase_unittest

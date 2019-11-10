@@ -13,6 +13,7 @@
 
 #ifdef UNITTEST_TIME_INSENSITIVE
 
+#define ASSERT_GE(val1, val2) do {} while(0)
 #define ASSERT_LE(val1, val2) do {} while(0)
 
 #endif
