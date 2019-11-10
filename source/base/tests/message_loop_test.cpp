@@ -11,6 +11,12 @@
 
 #define PLATFORM_SPECIFIC_CAPTURE(...) [__VA_ARGS__]
 
+#ifdef UNITTEST_TIME_INSENSITIVE
+
+#define ASSERT_LE(val1, val2) do {} while(0)
+
+#endif
+
 using namespace ffbase;
 
 TEST(MessageLoop, GetCurrent) {
