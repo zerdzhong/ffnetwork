@@ -19,20 +19,7 @@ Thread::Thread(const std::string& name) :
 joined_(false),
 name_(name)
 {
-    AutoResetWaitableEvent ev;
-    std::shared_ptr<TaskRunner> task_runner;
-    
-    thread_ = std::unique_ptr<std::thread>(new std::thread([&ev, &task_runner, name]{
-        SetCurrentThreadName(name);
-        MessageLoop::EnsureInitializedForCurrentThread();
-        auto& loop = MessageLoop::GetCurrent();
-        task_runner = loop.GetTaskRunner();
-        ev.Signal();
-        loop.Run();
-    }));
-    
-    ev.Wait();
-    task_runner_ = task_runner;
+
 }
 
 Thread::~Thread() {
@@ -43,24 +30,23 @@ Thread::~Thread() {
 
 void Thread::Start(closure thread_func) {
 
-
     AutoResetWaitableEvent ev;
     std::shared_ptr<TaskRunner> task_runner;
     std::string thread_name = name_;
 
-    if (!thread_func) {
-        thread_func = [&ev, &task_runner, thread_name]{
-            SetCurrentThreadName(thread_name);
-            MessageLoop::EnsureInitializedForCurrentThread();
-            auto& loop = MessageLoop::GetCurrent();
-            task_runner = loop.GetTaskRunner();
-            ev.Signal();
+    thread_ = std::unique_ptr<std::thread>(new std::thread([&ev, &task_runner, thread_name, thread_func]{
+        SetCurrentThreadName(thread_name);
+        MessageLoop::EnsureInitializedForCurrentThread();
+        auto& loop = MessageLoop::GetCurrent();
+        task_runner = loop.GetTaskRunner();
+        ev.Signal();
+
+        if (thread_func) {
+            thread_func();
+        } else {
             loop.Run();
-        };
-    }
-
-
-    thread_ = std::unique_ptr<std::thread>(new std::thread(thread_func));
+        }
+    }));
 
     ev.Wait();
     task_runner_ = task_runner;

@@ -12,6 +12,7 @@
 #include "request_task_impl.h"
 #include "thread/async_invoker.h"
 #include <ffnetwork/response_impl.h>
+#include "base/messageloop/message_loop.h"
 
 namespace {
     void ConfigCurlGlobalState(bool added_client) {
@@ -42,12 +43,17 @@ namespace ffnetwork {
     }
 
 #pragma mark- CurlClient
-    CurlClient::CurlClient() : have_new_request_(false), is_terminated_(false), use_multi_wait_(true){
+    CurlClient::CurlClient() : have_new_request_(false),
+    is_terminated_(false),
+    use_multi_wait_(true),
+    request_thread_("CurlClient")
+    {
         ConfigCurlGlobalState(true);
         curl_multi_handle_ = curl_multi_init();
         curl_multi_setopt(curl_multi_handle_, CURLMOPT_MAXCONNECTS, MAX_CONNECTIONS);
-        request_thread_.SetName("CurlClient", this);
-        request_thread_.Start(this);
+        request_thread_.Start([this]{
+            this->Run();
+        });
     }
 
     CurlClient::~CurlClient() {
@@ -69,7 +75,7 @@ namespace ffnetwork {
         client_lock.unlock();
 
         new_req_condition_.notify_all();
-        request_thread_.Stop();
+        request_thread_.Join();
     }
 
 #pragma mark- public_method
@@ -103,26 +109,29 @@ namespace ffnetwork {
 
     void CurlClient::RequestTaskDidCancel(const std::shared_ptr<RequestTask> &task) {
         std::string request_hash = task->taskIdentifier();
-        async_invoker_.AsyncInvoke<void>(&request_thread_, std::bind(&CurlClient::CancelRequest, this, request_hash));
+        request_thread_.GetTaskRunner()->PostTask(std::bind(&CurlClient::CancelRequest, this, request_hash));
     }
 
 
 #pragma mark- run_entry
 
-    void CurlClient::Run(Thread *thread) {
+    void CurlClient::Run() {
 
         std::unique_lock<std::mutex> client_lock(client_mutex_);
 
         int active_requests = -1;
 
-        while (!thread->IsQuitting()) {
+        ffbase::MessageLoop::EnsureInitializedForCurrentThread();
+        auto& loop =ffbase::MessageLoop::GetCurrent();
+
+        while (!is_terminated_) {
             curl_multi_perform(curl_multi_handle_, &active_requests);
 
             if (HandleCurlMsg()) {
                 continue;
             }
 
-            thread->ProcessMessages(100);
+            loop.RunForTime(ffbase::TimeDelta::FromMilliseconds(100));
 
             if (active_requests > 0) {
                 if (use_multi_wait_) {
@@ -338,9 +347,6 @@ namespace ffnetwork {
     }
 
     void CurlClient::CancelRequest(const std::string &hash) {
-        if (ThreadManager::Instance()->CurrentThread() != &request_thread_) {
-            return;
-        }
 
         if (handles_.find(hash) == handles_.end()) {
             return;;

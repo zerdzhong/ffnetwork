@@ -10,17 +10,14 @@
 #include <ffnetwork/client.h>
 #include <ffnetwork/request_task_delegate.h>
 #include "curl/curl.h"
-#include "thread/thread.h"
+#include "base/thread/thread.h"
 #include <mutex>
 #include <atomic>
-#include <condition_variable>
-#include "thread/async_invoker.h"
 
 namespace ffnetwork {
 
     class CurlClient : public Client,
             public RequestTaskDelegate,
-                       public Runnable,
 public std::enable_shared_from_this<CurlClient>
             {
 
@@ -61,7 +58,7 @@ public std::enable_shared_from_this<CurlClient>
         void RequestTaskDidCancel(const std::shared_ptr<RequestTask> &task) override;
 
         // Runnable
-        void Run(Thread* thread) override;
+        void Run();
 
     private:
         CURLM *curl_multi_handle_;
@@ -71,8 +68,7 @@ public std::enable_shared_from_this<CurlClient>
         std::condition_variable new_req_condition_;
         bool have_new_request_;
         std::atomic<bool> is_terminated_;
-        Thread request_thread_;
-        AsyncInvoker async_invoker_;
+        ffbase::Thread request_thread_;
 
         bool use_multi_wait_;
 

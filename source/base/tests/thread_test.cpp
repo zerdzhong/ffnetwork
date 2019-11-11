@@ -12,12 +12,14 @@ using namespace ffbase;
 
 TEST(Thread, Basic) {
     Thread thread;
+    thread.Start();
     ASSERT_TRUE(thread.GetTaskRunner());
 }
 
 TEST(Thread, SetName) {
     std::string set_name = "test-name";
     Thread thread(set_name);
+    thread.Start();
     EXPECT_EQ(thread.GetName(), set_name);
     thread.GetTaskRunner()->PostTask([&set_name] {
         char pthread_name[16];
@@ -30,6 +32,7 @@ TEST(Thread, SetName) {
 
 TEST(Thread, CanStartAndEndWithExplicitJoin) {
     Thread thread;
+    thread.Start();
     ASSERT_TRUE(thread.GetTaskRunner());
     thread.Join();
 }
@@ -37,6 +40,7 @@ TEST(Thread, CanStartAndEndWithExplicitJoin) {
 TEST(Thread, HasARunningMessageLoop) {
     Thread thread;
     bool done = false;
+    thread.Start();
     thread.GetTaskRunner()->PostTask([&done]() { done = true; });
     thread.Join();
     ASSERT_TRUE(done);
