@@ -13,6 +13,7 @@
 #include "base/thread/thread.h"
 #include <mutex>
 #include <atomic>
+#include <condition_variable>
 
 namespace ffnetwork {
 
