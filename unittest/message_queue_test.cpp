@@ -9,7 +9,7 @@
 #undef protected
 
 #include "thread/thread.h"
-#include "log/log_macro.h"
+#include "base/logging.h"
 #include "utils/time_utils.h"
 
 using namespace ffnetwork ;
@@ -97,7 +97,7 @@ private:
 TEST(MessageQueueManager, Clear) {
     UnwrapMainThreadScope s;
     if (MessageQueueManager::IsInitialized()) {
-        LOGD( "Unable to run MessageQueueManager::Clear test, since the \n"
+        FF_LOG_P(DEBUG, "Unable to run MessageQueueManager::Clear test, since the \n"
               "MessageQueueManager was already initialized by some \n"
               "other test in this run.");
         return;

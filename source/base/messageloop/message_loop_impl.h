@@ -18,7 +18,7 @@ namespace ffbase {
 class MessageLoopImpl : public Wakeable {
 public:
     static std::shared_ptr<MessageLoopImpl>Create();
-    virtual ~MessageLoopImpl();
+    ~MessageLoopImpl() override;
     
     virtual void Run() = 0;
     virtual void RunForTime(TimeDelta duration) = 0;

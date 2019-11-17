@@ -3,7 +3,7 @@
 //
 
 #include "async_invoker.h"
-#include "log/log_macro.h"
+#include "base/logging.h"
 #include "async_invoker_inl.h"
 
 #include <functional>
@@ -48,7 +48,7 @@ namespace ffnetwork {
 
     void AsyncInvoker::DoInvoke(Thread *thread, const std::shared_ptr<AsyncClosure> &closure, uint32_t id) {
         if (destroying_) {
-            LOGD("Tried to invoke while destroying the invoker.");
+            FF_LOG_P(DEBUG, "Tried to invoke while destroying the invoker.");
             return;
         }
         thread->Post(this, id, new SharedMessageData<AsyncClosure>(closure));
@@ -57,7 +57,7 @@ namespace ffnetwork {
     void AsyncInvoker::DoInvokeDelayed(Thread *thread, const std::shared_ptr<AsyncClosure> &closure, uint32_t delay_ms,
                                        uint32_t id) {
         if (destroying_) {
-            LOGD("Tried to invoke while destroying the invoker.");
+            FF_LOG_P(DEBUG, "Tried to invoke while destroying the invoker.");
             return;
         }
 //        thread->PostDelayed(delay_ms,this, id, new SharedMessageData<AsyncClosure>(closure));

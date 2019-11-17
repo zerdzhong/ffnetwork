@@ -74,13 +74,14 @@ void darwin_os_log(const LogLevel level, const char* log_info) {
 
 const char* const kLogLevelNames[LOG_NUM_LEVELS] = {
     "INFO",
+    "DEBUG",
     "WARNING",
     "ERROR",
     "FATAL"
 };
 
 const char* GetNameForLogLevel(LogLevel level) {
-    if (level >= LOG_INFO && level < LOG_NUM_LEVELS) {
+    if (level >= 0 && level < LOG_NUM_LEVELS) {
         return kLogLevelNames[level];
     }
     
@@ -107,7 +108,7 @@ LogMessage::LogMessage(LogLevel level, const char* file, int line, const char* c
 :level_(level), file_(file), line_(line)
 {
     stream_ << "[";
-    if (level >= LOG_INFO) {
+    if (level >= 0) {
         stream_ << GetNameForLogLevel(level);
     }
     
@@ -135,6 +136,18 @@ LogMessage::~LogMessage() {
     if (level_ >= LOG_FATAL) {
         abort();
     }
+}
+
+void LogMessage::print_log(const char* format, ...) {
+    va_list args;
+    va_start(args, format);
+
+    char buf[1024] = {0};
+    vsnprintf(buf, 1023, format, args);
+
+    stream_<< buf ;
+
+    va_end(args);
 }
 
 #pragma mark- log_setting

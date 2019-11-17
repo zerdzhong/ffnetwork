@@ -10,7 +10,7 @@
 
 #include <string>
 #include <unordered_map>
-#include "log/log_macro.h"
+#include "base/logging.h"
 
 using namespace ffnetwork;
 

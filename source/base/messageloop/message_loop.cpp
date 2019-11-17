@@ -3,6 +3,8 @@
 //
 
 #include "message_loop.h"
+
+#include <utility>
 #include "message_loop_impl.h"
 #include "logging.h"
 #include "task_runner.h"
@@ -69,7 +71,7 @@ void MessageLoop::Terminate() {
 }
 
 void MessageLoop::AddTaskObserver(intptr_t key, std::function<void()> callback) {
-    loop_->AddTaskObserver(key, callback);
+    loop_->AddTaskObserver(key, std::move(callback));
 }
 
 void MessageLoop::RemoveObserver(intptr_t key) {

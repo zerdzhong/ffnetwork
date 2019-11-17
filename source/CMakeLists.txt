@@ -13,9 +13,6 @@ set(FFNETWORK_SOURCE_FILES
         net/request_task_impl.cpp
         net/curl_client.h
         net/curl_client.cpp
-        log/logger.h
-        log/logger.cpp
-        log/log_macro.h
         thread/message_queue.h
         thread/message_queue.cpp
         thread/message_handler.h

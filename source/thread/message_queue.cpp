@@ -1,7 +1,7 @@
 #include "message_queue.h"
 #include <algorithm>
 #include <sys/time.h>
-#include "log/log_macro.h"
+#include "base/logging.h"
 #include "utils/time_utils.h"
 #include <assert.h>
 
@@ -257,7 +257,7 @@ namespace ffnetwork {
         // we will wrap this number.  Even then, only messages with identical times
         // will be misordered, and then only briefly.  This is probably ok.
         if (++dmsgq_next_num_ == 0) {
-            LOGE("dmsgq_next_num_ is 0");
+            FF_LOG_P(ERROR,"dmsgq_next_num_ is 0");
         }
     }
     

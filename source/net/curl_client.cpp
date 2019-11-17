@@ -7,7 +7,7 @@
 #include <vector>
 #include <utility>
 #include <unistd.h>
-#include "log/log_macro.h"
+#include "base/logging.h"
 #include "utils/time_utils.h"
 #include "request_task_impl.h"
 #include "thread/async_invoker.h"
@@ -82,8 +82,8 @@ namespace ffnetwork {
 
     std::shared_ptr<RequestTask> CurlClient::PerformRequest(const std::shared_ptr<Request> &request, std::function<void(
             const std::shared_ptr<Response> &)> callback) {
-        
-        LOGD("PerformRequest url:%s", request->url().c_str());
+
+        FF_LOG_P(INFO, "PerformRequest url %s", request->url().c_str());
 
         std::unique_lock<std::mutex> client_lock(client_mutex_);
         std::string request_hash = request->hash();
@@ -177,7 +177,7 @@ namespace ffnetwork {
 
                 if(msg->data.result != CURLE_OK){
                     // TODO retry?
-                    LOGE("CURL Error (%s)", curl_easy_strerror(msg->data.result));
+                    FF_LOG(ERROR) << "CURL Error " << curl_easy_strerror(msg->data.result);
                 }
 
                 ResponseCode response_code = ResponseCode::Invalid;
@@ -193,9 +193,9 @@ namespace ffnetwork {
                 const auto *data = (const unsigned char *) handle_info->response.c_str();
                 size_t data_length = handle_info->response.size();
 
-//                LOGD("Got response for: %s", request->url().c_str());
-//                LOGD("Response code: %lu", status_code);
-//                LOGD("Response size: %lu", data_length);
+//                FF_LOG_P(DEBUG, ", "Got response for: %s", request->url().c_str());
+//                FF_LOG_P(DEBUG, ", "Response code: %lu", status_code);
+//                FF_LOG_P(DEBUG, ", "Response size: %lu", data_length);
                 
                 auto metrics = handle_info->metrics;
                 ConfigMetrics(metrics.get(), handle);
@@ -217,7 +217,7 @@ namespace ffnetwork {
                     cb(new_response);
                 }
             } else {
-                LOGE("CURLMsg (%d)\n", msg->msg);
+                FF_LOG(ERROR) << "CURLMsg " << msg->msg;
             }
         }
 
@@ -279,7 +279,7 @@ namespace ffnetwork {
         int num_fds = -1;
         CURLMcode res = curl_multi_wait(curl_multi_handle_, NULL, 0, timeout_ms, &num_fds);
         if(res != CURLM_OK) {
-            LOGE("curl_multi_wait not ok err_code:%d, desc:%s\n", res, curl_multi_strerror(res));
+            FF_LOG_P(ERROR, "curl_multi_wait not ok err_code:%d, desc:%s\n", res, curl_multi_strerror(res));
         }
     }
 
@@ -295,11 +295,11 @@ namespace ffnetwork {
         FD_ZERO(&E);
 
         if (curl_multi_fdset(curl_multi_handle_, &R, &W, &E, &max_fd)) {
-            LOGE("E: curl_multi_fdset\n");
+            FF_LOG_P(ERROR,"E: curl_multi_fdset\n");
         }
 
         if (curl_multi_timeout(curl_multi_handle_, &wait_time)) {
-            LOGE("E: curl_multi_timeout\n");
+            FF_LOG_P(ERROR,"E: curl_multi_timeout\n");
         }
 
         if (wait_time == -1) {
@@ -313,7 +313,7 @@ namespace ffnetwork {
             T.tv_usec = (wait_time % 1000) * 1000;
 
             if (0 > select(max_fd + 1, &R, &W, &E, &T)) {
-                LOGE("E: select(%i,,,,%li): %i: %s\n", max_fd + 1, wait_time, errno, strerror(errno));
+                FF_LOG_P(ERROR,"E: select(%i,,,,%li): %i: %s\n", max_fd + 1, wait_time, errno, strerror(errno));
             }
         }
     }

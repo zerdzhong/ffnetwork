@@ -4,7 +4,7 @@
 
 #include "gtest/gtest.h"
 #include "ffnetwork/client.h"
-#include "log/log_macro.h"
+#include "base/logging.h"
 #include <atomic>
 #include <mutex>
 #include <condition_variable>
@@ -85,9 +85,9 @@ TEST(CurlClientTests, request_batch) {
         cv.wait(lock);
     }
     
-    LOGD("response1 metrics :%s", metrics_dump_info(response1->metrics().get()).c_str());
-    LOGD("response2 metrics :%s", metrics_dump_info(response2->metrics().get()).c_str());
-    LOGD("response3 metrics :%s", metrics_dump_info(response3->metrics().get()).c_str());
+    FF_LOG_P(DEBUG, "response1 metrics :%s", metrics_dump_info(response1->metrics().get()).c_str());
+    FF_LOG_P(DEBUG, "response2 metrics :%s", metrics_dump_info(response2->metrics().get()).c_str());
+    FF_LOG_P(DEBUG, "response3 metrics :%s", metrics_dump_info(response3->metrics().get()).c_str());
     
     EXPECT_NE(response1.get(), nullptr);
     EXPECT_NE(response2.get(), nullptr);

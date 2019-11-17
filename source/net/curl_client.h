@@ -79,7 +79,7 @@ public std::enable_shared_from_this<CurlClient>
         void WaitFD(long timeout_ms);
         bool HandleCurlMsg();
         ResponseCode ConvertCurlCode(CURLcode);
-        void ConfigMetrics(Metrics* metrics, CURL *handle);
+        static void ConfigMetrics(Metrics* metrics, CURL *handle);
 
     // Curl callbacks
     public:

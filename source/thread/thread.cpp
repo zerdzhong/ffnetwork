@@ -1,5 +1,5 @@
 #include "thread.h"
-#include "log/log_macro.h"
+#include "base/logging.h"
 #include "utils/time_utils.h"
 #include <cstdio>
 #include <cassert>
@@ -104,7 +104,7 @@ bool Thread::Start(Runnable* runnable) {
     pthread_attr_init(&attr);
     int error_code = pthread_create(&thread_, &attr, PreRun, init);
     if (0 != error_code) {
-        LOGD("Unable to create pthread, error %d", error_code);
+        FF_LOG_P(DEBUG, "Unable to create pthread, error %d", error_code);
         return false;
     }
 
@@ -121,7 +121,7 @@ void Thread::Stop() {
 void Thread::Join() {
     if (running()) {
         if (Current() && !Current()->blocking_calls_allowed_) {
-            LOGD("Waiting for the thread to join, but blocking calls have been disallowed");
+            FF_LOG_P(DEBUG, "Waiting for the thread to join, but blocking calls have been disallowed");
         }
 
         void *pv;

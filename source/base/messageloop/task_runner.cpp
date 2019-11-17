@@ -41,7 +41,7 @@ bool TaskRunner::RunTasksOnCurrentThread() {
 
 }
 
-void TaskRunner::RunNowOrPostTask(const std::shared_ptr<TaskRunner>& runner, closure task) {
+void TaskRunner::RunNowOrPostTask(const std::shared_ptr<TaskRunner>& runner, const closure& task) {
     if (runner->RunTasksOnCurrentThread()) {
         task();
     } else {
