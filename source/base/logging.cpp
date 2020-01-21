@@ -1,7 +1,8 @@
+#include "logging.h"
 #include <algorithm>
 #include <iostream>
 #include <cstring>
-#include "logging.h"
+#include <cstdarg>
 
 #if defined(ANDROID)
 #include <android/log.h>
@@ -39,9 +40,9 @@ void android_os_log(const LogLevel level, const char* log_inf) {
 #define	FFBASE_DARWIN_LOG_HANDLE ffbase_darwin_log()
 
 static os_log_t ffbase_darwin_log() {
-    static os_log_t	log	= NULL;
+    static os_log_t	log	= nullptr;
 
-    if (log == NULL) {
+    if (log == nullptr) {
         log = os_log_create("com.zdzhong.ffbase", "ffbase");
     }
 

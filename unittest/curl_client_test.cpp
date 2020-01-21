@@ -20,7 +20,7 @@ TEST(CurlClientTests, request) {
     auto client = CreateClient();
     EXPECT_NE((void *)0, client.get());
 
-    auto url = "https://github.com";
+    auto url = "https://bing.com";
     std::unordered_map<std::string, std::string> header = {{"Range","0-"}, {"User-Agent","test_ua"}};
     auto request = CreateRequest(url, header);
 
@@ -37,11 +37,11 @@ TEST(CurlClientTests, request_batch) {
 
     std::unordered_map<std::string, std::string> header = {{"Range","0-"}, {"User-Agent","test_ua"}};
     
-    auto url = "https://github.com";
+    auto url = "https://www.apple.com";
     auto request = CreateRequest(url, header);
     std::shared_ptr<Response> response1 = nullptr;
 
-    auto url2 = "http://www.cplusplus.com/doc/tutorial/";
+    auto url2 = "http://llvm.org/";
     auto request2 = CreateRequest(url2, header);
     std::shared_ptr<Response> response2 = nullptr;
     
@@ -85,9 +85,9 @@ TEST(CurlClientTests, request_batch) {
         cv.wait(lock);
     }
     
-    FF_LOG_P(DEBUG, "response1 metrics :%s", metrics_dump_info(response1->metrics().get()).c_str());
-    FF_LOG_P(DEBUG, "response2 metrics :%s", metrics_dump_info(response2->metrics().get()).c_str());
-    FF_LOG_P(DEBUG, "response3 metrics :%s", metrics_dump_info(response3->metrics().get()).c_str());
+    FF_LOG_P(DEBUG, "%s response1 metrics :%s",response1->request()->url().c_str() , metrics_dump_info(response1->metrics().get()).c_str());
+    FF_LOG_P(DEBUG, "%s response2 metrics :%s",response2->request()->url().c_str() , metrics_dump_info(response2->metrics().get()).c_str());
+    FF_LOG_P(DEBUG, "%s response3 metrics :%s",response3->request()->url().c_str() , metrics_dump_info(response3->metrics().get()).c_str());
     
     EXPECT_NE(response1.get(), nullptr);
     EXPECT_NE(response2.get(), nullptr);
@@ -102,7 +102,7 @@ TEST(CurlClientTests, Cancel) {
     auto client = CreateClient();
     EXPECT_NE((void *) 0, client.get());
 
-    auto url = "https://github.com";
+    auto url = "https://bing.com";
     auto request = CreateRequest(url, {});
     std::shared_ptr<Response> cancelled_response = nullptr;
 

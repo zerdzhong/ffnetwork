@@ -131,7 +131,7 @@ namespace ffnetwork {
                 continue;
             }
 
-            loop.RunForTime(ffbase::TimeDelta::FromMilliseconds(100));
+            loop.RunForTime(ffbase::TimeDelta::FromMilliseconds(10));
 
             if (active_requests > 0) {
                 if (use_multi_wait_) {
@@ -193,9 +193,9 @@ namespace ffnetwork {
                 const auto *data = (const unsigned char *) handle_info->response.c_str();
                 size_t data_length = handle_info->response.size();
 
-//                FF_LOG_P(DEBUG, ", "Got response for: %s", request->url().c_str());
-//                FF_LOG_P(DEBUG, ", "Response code: %lu", status_code);
-//                FF_LOG_P(DEBUG, ", "Response size: %lu", data_length);
+                FF_LOG_P(DEBUG, "Got response for: %s", request->url().c_str());
+                FF_LOG_P(DEBUG, "Response code: %lu", status_code);
+                FF_LOG_P(DEBUG, "Response size: %lu", data_length);
                 
                 auto metrics = handle_info->metrics;
                 ConfigMetrics(metrics.get(), handle);
@@ -225,7 +225,7 @@ namespace ffnetwork {
     }
     
     ResponseCode CurlClient::ConvertCurlCode(CURLcode code) {
-        ResponseCode response_code = ResponseCode::Invalid;
+        ResponseCode response_code;
         switch (code) {
             case CURLE_OK: {
                 response_code = ResponseCode::OK;
@@ -277,7 +277,7 @@ namespace ffnetwork {
 
     void CurlClient::WaitMulti(long timeout_ms) {
         int num_fds = -1;
-        CURLMcode res = curl_multi_wait(curl_multi_handle_, NULL, 0, timeout_ms, &num_fds);
+        CURLMcode res = curl_multi_wait(curl_multi_handle_, nullptr, 0, timeout_ms, &num_fds);
         if(res != CURLM_OK) {
             FF_LOG_P(ERROR, "curl_multi_wait not ok err_code:%d, desc:%s\n", res, curl_multi_strerror(res));
         }
@@ -286,7 +286,7 @@ namespace ffnetwork {
     void CurlClient::WaitFD(long timeout_ms) {
         int max_fd = -1;
         long wait_time = -1;
-        struct timeval T;
+        struct timeval T{};
 
         fd_set R, W, E;
 
@@ -383,8 +383,8 @@ namespace ffnetwork {
 
     }
 
-    CurlClient::HandleInfo::HandleInfo(std::shared_ptr<Request> req,
-                                       std::shared_ptr<Metrics> metrics_p,
+    CurlClient::HandleInfo::HandleInfo(const std::shared_ptr<Request>& req,
+                                       const std::shared_ptr<Metrics>& metrics_p,
                                        std::function<void(const std::shared_ptr<Response> &)> callback)
                                        :request(req), request_headers(nullptr), callback(std::move(callback)), metrics(metrics_p)
     {

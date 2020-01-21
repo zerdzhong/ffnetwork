@@ -15,7 +15,7 @@
 using namespace ffnetwork;
 
 TEST(RequestTest, basic) {
-    auto url = "https://github.com";
+    auto url = "https://bing.com";
     std::unordered_map<std::string, std::string> header = {{"Range","0-"}, {"User-Agent","test_ua"}};
     auto request = CreateRequest(url, header);
     

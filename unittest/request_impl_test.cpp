@@ -17,7 +17,7 @@ using namespace ffnetwork;
              {"Range","0-"},
              {"User-Agent", "test-ua"}
              };
-     std::string url = "https://github.com";
+     std::string url = "https://bing.com";
      auto request_impl = new RequestImpl(url, headers);
      GTEST_ASSERT_EQ(request_impl->url(), url);
      GTEST_ASSERT_EQ(request_impl->headerMap(), headers);

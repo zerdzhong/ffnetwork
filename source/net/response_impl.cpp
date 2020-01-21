@@ -99,7 +99,7 @@ namespace ffnetwork {
     std::string metrics_dump_info(Metrics *metrics) {
         std::stringstream iss;
         
-        iss
+        iss << '\n'
         << "request_start_time: " << metrics->request_start_ms << '\n'
         << "request_end_ms: " << metrics->request_end_ms << '\n'
         << "dns_time_ms: " << metrics->dns_time_ms << '\n'

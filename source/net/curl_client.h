@@ -32,8 +32,8 @@ public std::enable_shared_from_this<CurlClient>
             std::function<void(const std::shared_ptr<Response> &)> callback;
             const std::shared_ptr<Metrics> metrics;
 
-            HandleInfo(std::shared_ptr<Request> req,
-                       std::shared_ptr<Metrics> metrics,
+            HandleInfo(const std::shared_ptr<Request>& req,
+                       const std::shared_ptr<Metrics>& metrics,
                        std::function<void(const std::shared_ptr<Response> &)> callback);
             HandleInfo();
             ~HandleInfo();
@@ -78,7 +78,7 @@ public std::enable_shared_from_this<CurlClient>
         void WaitMulti(long timeout_ms);
         void WaitFD(long timeout_ms);
         bool HandleCurlMsg();
-        ResponseCode ConvertCurlCode(CURLcode);
+        static ResponseCode ConvertCurlCode(CURLcode);
         static void ConfigMetrics(Metrics* metrics, CURL *handle);
 
     // Curl callbacks
