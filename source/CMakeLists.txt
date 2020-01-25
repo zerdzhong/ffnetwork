@@ -13,27 +13,11 @@ set(FFNETWORK_SOURCE_FILES
         net/request_task_impl.cpp
         net/curl_client.h
         net/curl_client.cpp
-        thread/message_queue.h
-        thread/message_queue.cpp
-        thread/message_handler.h
-        thread/message_handler.cpp
-        thread/thread_annotations.h
-        thread/critical_section.h
-        thread/critical_section.cpp
-        thread/thread.h
-        thread/thread.cpp
         utils/time_utils.h
         utils/time_utils.cpp
         utils/sha256.h
         utils/sha256.cpp
-        thread/event.cpp
-        thread/event.h
-        thread/async_invoker.cpp
-        thread/async_invoker.h
         utils/construct_macro.h
-        thread/async_invoker_inl.h
-        sigslot/sigslot.hpp
-        thread/callback.h
         net/response_impl.cpp)
 
 

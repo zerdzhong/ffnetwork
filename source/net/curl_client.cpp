@@ -10,14 +10,14 @@
 #include "base/logging.h"
 #include "utils/time_utils.h"
 #include "request_task_impl.h"
-#include "thread/async_invoker.h"
+#include "base/thread/mutex.h"
 #include <ffnetwork/response_impl.h>
 #include "base/messageloop/message_loop.h"
 
 namespace {
     void ConfigCurlGlobalState(bool added_client) {
-        ffnetwork::CriticalSection criticalSection;
-        ffnetwork::CriticalScope cs(&criticalSection);
+        auto* mutex = ffbase::SharedMutex::Create();
+		ffbase::UniqueLock lock(*mutex);
 
         static long curl_clients_active = 0;
 
