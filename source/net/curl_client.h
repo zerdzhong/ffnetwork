@@ -8,7 +8,7 @@
 #include <memory>
 #include <unordered_map>
 #include <ffnetwork/client.h>
-#include <ffnetwork/request_task_delegate.h>
+#include "request_task_impl.h"
 #include "curl/curl.h"
 #include "base/thread/thread.h"
 #include <mutex>
@@ -17,30 +17,7 @@
 
 namespace ffnetwork {
 
-    class CurlClient : public Client,
-            public RequestTaskDelegate,
-public std::enable_shared_from_this<CurlClient>
-            {
-
-        struct HandleInfo {
-            CURL *handle;
-            const std::shared_ptr<Request> request;
-            std::string request_hash;
-            std::string response;
-            curl_slist *request_headers;
-            std::unordered_map<std::string, std::string> response_headers;
-            std::function<void(const std::shared_ptr<Response> &)> callback;
-            const std::shared_ptr<Metrics> metrics;
-
-            HandleInfo(const std::shared_ptr<Request>& req,
-                       const std::shared_ptr<Metrics>& metrics,
-                       std::function<void(const std::shared_ptr<Response> &)> callback);
-            HandleInfo();
-            ~HandleInfo();
-
-            void ConfigureHeaders();
-            void ConfigureCurlHandle();
-        };
+    class CurlClient : public Client, public std::enable_shared_from_this<CurlClient>, public RequestTaskDelegate {
 
     public:
         CurlClient();
@@ -53,38 +30,35 @@ public std::enable_shared_from_this<CurlClient>
                 const std::shared_ptr<Request> &request,
                 std::function<void(const std::shared_ptr<Response> &)> callback) override;
 
-        void CancelRequest(const std::string& hash);
-
-        // RequestTokenDelegate
-        void RequestTaskDidCancel(const std::shared_ptr<RequestTask> &task) override;
+		std::shared_ptr<RequestTask> TaskWithRequest(const std::shared_ptr<Request> &request, CompletionCallback) override ;
 
         // Runnable
         void Run();
 
     private:
         CURLM *curl_multi_handle_;
-        std::unordered_map<std::string, std::unique_ptr<HandleInfo>> handles_;
+        std::unordered_map<std::string, std::shared_ptr<RequestTaskImpl>> handles_;
 
         std::mutex client_mutex_;
-        std::condition_variable new_req_condition_;
+        std::condition_variable req_condition_;
         bool have_new_request_;
         std::atomic<bool> is_terminated_;
         ffbase::Thread request_thread_;
 
         bool use_multi_wait_;
 
+		//RequestTaskDelegate
+		void RequestTaskCancel(const std::shared_ptr<RequestTask> &task) override ;
+		void RequestTaskStart(const std::shared_ptr<RequestTask> &task) override ;
+
+		void StartRequest(const std::string& hash);
+		void CancelRequest(const std::string& hash);
         void CleanupRequest(const std::string& hash);
 
         void WaitMulti(long timeout_ms);
         void WaitFD(long timeout_ms);
         bool HandleCurlMsg();
         static ResponseCode ConvertCurlCode(CURLcode);
-        static void ConfigMetrics(Metrics* metrics, CURL *handle);
-
-    // Curl callbacks
-    public:
-        static size_t write_callback(char *data, size_t size, size_t nitems, void *str);
-        static size_t header_callback(char *data, size_t size, size_t nitems, void *str);
     };
 
     extern std::shared_ptr<Client> CreateCurlClient();

@@ -17,7 +17,6 @@ set(FFNETWORK_SOURCE_FILES
         utils/time_utils.cpp
         utils/sha256.h
         utils/sha256.cpp
-        utils/construct_macro.h
         net/response_impl.cpp)
 
 

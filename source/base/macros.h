@@ -11,8 +11,8 @@
     TypeName& operator=(TypeName&&) = delete
 
 #define FF_DISALLOW_COPY_AND_ASSIGN(TypeName)   \
-    TypeName(const TypeName&) = delete; \
-    TypeName& operator=(const TypeName&) = delete
+    FF_DISALLOW_COPY(TypeName); \
+    FF_DISALLOW_ASSIGN(TypeName)
 
 #define FF_DISALLOW_COPY_ASSIGN_AND_MOVE(TypeName) \
     FF_DISALLOW_COPY_AND_ASSIGN(TypeName);  \

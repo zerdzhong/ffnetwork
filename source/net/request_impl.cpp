@@ -3,14 +3,13 @@
 #include <vector>
 #include <sstream>
 #include <algorithm>
-#include <cstring>
 
 #include "utils/sha256.h"
 
 namespace ffnetwork {
-    RequestImpl::RequestImpl(const std::string &url,
-        const std::unordered_map<std::string, std::string> &header_map):
-    url_(url), headers_(header_map), method_(GetMethod), data_(nullptr), data_length_(0)     
+    RequestImpl::RequestImpl(const std::string& url,
+        const std::unordered_map<std::string, std::string>& header_map):
+    url_(url), headers_(header_map), method_(GetMethod), data_(nullptr), data_length_(0)
     {
 
     }

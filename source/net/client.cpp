@@ -3,9 +3,7 @@
 #include "curl_client.h"
 
 namespace ffnetwork {
-    Client::~Client() {
-
-    }
+    Client::~Client() = default;
 
     std::shared_ptr<Response> Client::PerformRequestSync(const std::shared_ptr<Request> &request) {
         std::mutex mutex;
