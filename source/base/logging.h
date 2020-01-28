@@ -3,6 +3,7 @@
 
 #include <sstream>
 #include "macros.h"
+#include "compiler_specific.h"
 
 namespace ffbase {
 
@@ -10,16 +11,18 @@ typedef int LogLevel;
 
 // Default log levels. Negative values can be used for verbose log levels.
 constexpr LogLevel LOG_INFO = 0;
-constexpr LogLevel LOG_WARNING = 1;
-constexpr LogLevel LOG_ERROR = 2;
-constexpr LogLevel LOG_FATAL = 3;
-constexpr LogLevel LOG_NUM_LEVELS = 4;
+constexpr LogLevel LOG_DEBUG = 1;
+constexpr LogLevel LOG_WARNING = 2;
+constexpr LogLevel LOG_ERROR = 3;
+constexpr LogLevel LOG_FATAL = 4;
+constexpr LogLevel LOG_NUM_LEVELS = 5;
 
 #ifdef DEBUG
 const LogLevel LOG_DFATAL = LOG_ERROR;
 #else
 const LogLevel LOG_DFATAL = LOG_FATAL;
 #endif
+
 
 class LogMessageVoidify {
 public:
@@ -31,7 +34,8 @@ public:
     LogMessage(LogLevel level, const char* file, int line, const char* condition);
     ~LogMessage();
     
-    std::ostream& stream() { return stream_; }
+    std::ostream& stream() { return stream_;}
+    void print_log(const char* format, ...);
     
 private:
     std::ostringstream stream_;
@@ -58,6 +62,9 @@ int GetMinLogLevel();
 #define FF_LOG_STREAM(level) \
     ::ffbase::LogMessage(::ffbase::LOG_##level, __FILE__, __LINE__, nullptr).stream()
 
+#define FF_LOG_PRINT(level, ...) \
+    ::ffbase::LogMessage(::ffbase::LOG_##level, __FILE__, __LINE__, nullptr).print_log(__VA_ARGS__)
+
 #define FF_LAZY_STREAM(stream, condition) \
     !(condition) ? (void)0 : ::ffbase::LogMessageVoidify() & (stream)
 
@@ -71,6 +78,9 @@ int GetMinLogLevel();
 #define FF_LOG(level) \
     FF_LAZY_STREAM(FF_LOG_STREAM(level), FF_LOG_IS_ON(level))
 
+#define FF_LOG_P(level, ...) \
+    !(FF_LOG_IS_ON(level)) ? (void)0 :  FF_LOG_PRINT(level, __VA_ARGS__)
+
 #define FF_CHECK(condition) \
     FF_LAZY_STREAM(::ffbase::LogMessage(::ffbase::LOG_FATAL, __FILE__, __LINE__, #condition) \
     .stream(), !(condition))
@@ -78,6 +88,8 @@ int GetMinLogLevel();
 #ifndef DEBUG
     #define FF_DLOG(level) FF_LOG(level)
     #define FF_DCHECK(condition) FF_CHECK(condition)
+
+    #define FF_DLOG_P(level, ...) FF_LOG_P(level, __VA_ARGS__)
 #else
     #define FF_DLOG(severity) FF_EAT_STREAM_PARAMETERS(true)
     #define FF_DCHECK(condition) FF_EAT_STREAM_PARAMETERS(condition)

@@ -7,9 +7,9 @@ namespace ffnetwork {
 
     class RequestImpl : public Request {
     public:
-        RequestImpl(const std::string &url,
-        const std::unordered_map<std::string, std::string> &header_map);
-        RequestImpl(const Request &request);
+        explicit RequestImpl(const std::string& url, const std::unordered_map<std::string, std::string>& header_map);
+        explicit RequestImpl(const Request &request);
+
         virtual ~RequestImpl();
 
         std::string url() const override;

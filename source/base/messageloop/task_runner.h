@@ -26,7 +26,7 @@ public:
 
     explicit TaskRunner(std::shared_ptr<MessageLoopImpl> loop);
     
-    static void RunNowOrPostTask(const std::shared_ptr<TaskRunner>& runner, closure task);
+    static void RunNowOrPostTask(const std::shared_ptr<TaskRunner>& runner, const closure& task);
     
 private:
     std::shared_ptr<MessageLoopImpl> loop_;

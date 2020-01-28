@@ -10,13 +10,15 @@
 
 
 namespace ffnetwork {
+	typedef std::function<void(const std::shared_ptr<Response> &)> CompletionCallback;
     class Client {
         public:
         virtual ~Client();
 
-        virtual std::shared_ptr<RequestTask> PerformRequest(
-            const std::shared_ptr<Request> &request,
-            std::function<void(const std::shared_ptr<Response> &)> callback) = 0;
+		virtual std::shared_ptr<RequestTask> TaskWithRequest(const std::shared_ptr<Request> &request, CompletionCallback) = 0;
+
+        virtual std::shared_ptr<RequestTask> PerformRequest(const std::shared_ptr<Request> &request,
+			CompletionCallback callback) = 0;
 
         virtual std::shared_ptr<Response> PerformRequestSync(const std::shared_ptr<Request> &request);
     };

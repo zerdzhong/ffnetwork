@@ -1,9 +1,8 @@
 dist: bionic
-sudo: false
 
 language: cpp
 
-matrix:
+jobs:
   include:
   - os: linux
     compiler: gcc

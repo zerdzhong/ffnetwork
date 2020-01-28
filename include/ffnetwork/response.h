@@ -74,7 +74,6 @@ namespace ffnetwork {
         uint64_t request_start_ms = 0;
         uint64_t request_end_ms = 0;
         
-        
         double dns_time_ms = 0;
         double connect_time_ms = 0;
         double ssl_time_ms = 0;

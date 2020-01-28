@@ -3,9 +3,9 @@
 //
 
 #include "thread.h"
-#include "waitable_event.h"
-#include "messageloop/message_loop.h"
 #include "logging.h"
+#include "messageloop/message_loop.h"
+#include "waitable_event.h"
 #include <pthread.h>
 
 #if LINUX || ANDROID
@@ -14,90 +14,66 @@
 
 namespace ffbase {
 
-#pragma mark- life_cycle
-Thread::Thread(const std::string& name) :
-joined_(false),
-name_(name)
-{
-    AutoResetWaitableEvent ev;
-    std::shared_ptr<TaskRunner> task_runner;
-    
-    thread_ = std::unique_ptr<std::thread>(new std::thread([&ev, &task_runner, name]{
-        SetCurrentThreadName(name);
-        MessageLoop::EnsureInitializedForCurrentThread();
-        auto& loop = MessageLoop::GetCurrent();
-        task_runner = loop.GetTaskRunner();
-        ev.Signal();
-        loop.Run();
-    }));
-    
-    ev.Wait();
-    task_runner_ = task_runner;
-}
+#pragma mark - life_cycle
+Thread::Thread(const std::string &name) : joined_(false), name_(name) {}
 
-Thread::~Thread() {
-    Join();
-}
+Thread::~Thread() { Join(); }
 
-#pragma mark- public_method
+#pragma mark - public_method
 
 void Thread::Start(closure thread_func) {
 
+  AutoResetWaitableEvent ev;
+  std::shared_ptr<TaskRunner> task_runner;
+  std::string thread_name = name_;
 
-    AutoResetWaitableEvent ev;
-    std::shared_ptr<TaskRunner> task_runner;
-    std::string thread_name = name_;
+  thread_ = std::unique_ptr<std::thread>(
+      new std::thread([&ev, &task_runner, thread_name, thread_func] {
+        SetCurrentThreadName(thread_name);
+        MessageLoop::EnsureInitializedForCurrentThread();
+        auto &loop = MessageLoop::GetCurrent();
+        task_runner = loop.GetTaskRunner();
+        ev.Signal();
 
-    if (!thread_func) {
-        thread_func = [&ev, &task_runner, thread_name]{
-            SetCurrentThreadName(thread_name);
-            MessageLoop::EnsureInitializedForCurrentThread();
-            auto& loop = MessageLoop::GetCurrent();
-            task_runner = loop.GetTaskRunner();
-            ev.Signal();
-            loop.Run();
-        };
-    }
+        if (thread_func) {
+          thread_func();
+        } else {
+          loop.Run();
+        }
+      }));
 
-
-    thread_ = std::unique_ptr<std::thread>(new std::thread(thread_func));
-
-    ev.Wait();
-    task_runner_ = task_runner;
+  ev.Wait();
+  task_runner_ = task_runner;
 }
 
 void Thread::Join() {
-    if (joined_) {
-        return;
-    }
-    
-    joined_ = true;
-    task_runner_->PostTask([](){
-        MessageLoop::GetCurrent().Terminate();
-    });
-    thread_->join();
+  if (joined_) {
+    return;
+  }
+
+  joined_ = true;
+  task_runner_->PostTask([]() { MessageLoop::GetCurrent().Terminate(); });
+  thread_->join();
 }
 
 std::shared_ptr<TaskRunner> Thread::GetTaskRunner() const {
-    return task_runner_;
+  return task_runner_;
 }
 
-std::string Thread::GetName() const {
-    return name_;
-}
+std::string Thread::GetName() const { return name_; }
 
-void Thread::SetCurrentThreadName(const std::string& name) {
+void Thread::SetCurrentThreadName(const std::string &name) {
   if (name.empty()) {
-      return;
+    return;
   }
 #if MAC
-    pthread_setname_np(name.c_str());
+  pthread_setname_np(name.c_str());
 #elif LINUX || ANDROID
-    prctl(PR_SET_NAME, reinterpret_cast<unsigned long>(name.c_str()));
+  prctl(PR_SET_NAME, reinterpret_cast<unsigned long>(name.c_str()));
 #else
-    FF_DLOG(INFO) << "Could not set the thread name to '" << name
-                  << "' on this platform.";
+  FF_DLOG(INFO) << "Could not set the thread name to '" << name
+                << "' on this platform.";
 #endif
 }
 
-}
+} // namespace ffbase
