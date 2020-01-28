@@ -11,37 +11,37 @@
 using namespace ffbase;
 
 TEST(Thread, Basic) {
-    Thread thread;
-    thread.Start();
-    ASSERT_TRUE(thread.GetTaskRunner());
+  Thread thread;
+  thread.Start();
+  ASSERT_TRUE(thread.GetTaskRunner());
 }
 
 TEST(Thread, SetName) {
-    std::string set_name = "test-name";
-    Thread thread(set_name);
-    thread.Start();
-    EXPECT_EQ(thread.GetName(), set_name);
-    thread.GetTaskRunner()->PostTask([&set_name] {
-        char pthread_name[16];
-        memset(pthread_name, 0x00, 16);
-        pthread_getname_np(pthread_self(), pthread_name, 16);
-        std::string thread_name_str(pthread_name);
-        EXPECT_EQ(thread_name_str, set_name);
-    });
+  std::string set_name = "test-name";
+  Thread thread(set_name);
+  thread.Start();
+  EXPECT_EQ(thread.GetName(), set_name);
+  thread.GetTaskRunner()->PostTask([&set_name] {
+    char pthread_name[16];
+    memset(pthread_name, 0x00, 16);
+    pthread_getname_np(pthread_self(), pthread_name, 16);
+    std::string thread_name_str(pthread_name);
+    EXPECT_EQ(thread_name_str, set_name);
+  });
 }
 
 TEST(Thread, CanStartAndEndWithExplicitJoin) {
-    Thread thread;
-    thread.Start();
-    ASSERT_TRUE(thread.GetTaskRunner());
-    thread.Join();
+  Thread thread;
+  thread.Start();
+  ASSERT_TRUE(thread.GetTaskRunner());
+  thread.Join();
 }
 
 TEST(Thread, HasARunningMessageLoop) {
-    Thread thread;
-    bool done = false;
-    thread.Start();
-    thread.GetTaskRunner()->PostTask([&done]() { done = true; });
-    thread.Join();
-    ASSERT_TRUE(done);
+  Thread thread;
+  bool done = false;
+  thread.Start();
+  thread.GetTaskRunner()->PostTask([&done]() { done = true; });
+  thread.Join();
+  ASSERT_TRUE(done);
 }
