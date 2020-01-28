@@ -19,7 +19,7 @@ namespace ffnetwork {
 
 class CurlClient : public Client,
                    public std::enable_shared_from_this<CurlClient>,
-                   public RequestTaskDelegate {
+                   public RequestTaskInternalDelegate {
 
 public:
   CurlClient();
@@ -41,11 +41,12 @@ public:
 
 private:
   CURLM *curl_multi_handle_;
-  std::unordered_map<std::string, std::shared_ptr<RequestTaskImpl>> handles_;
+  std::unordered_map<std::string, std::shared_ptr<RequestTaskImpl>>
+      request_task_map_;
 
   std::mutex client_mutex_;
   std::condition_variable req_condition_;
-  bool have_new_request_;
+
   std::atomic<bool> is_terminated_;
   ffbase::Thread request_thread_;
 

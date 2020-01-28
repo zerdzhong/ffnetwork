@@ -5,56 +5,61 @@
 #include <ffnetwork/client.h>
 #include <ffnetwork/request_task.h>
 #include <ffnetwork/request_task_delegate.h>
+#include "response_impl.h"
 #include <memory>
 
 namespace ffnetwork {
+
+class RequestTaskInternalDelegate {
+public:
+  virtual void RequestTaskCancel(const std::shared_ptr<RequestTask> &task) = 0;
+  virtual void RequestTaskStart(const std::shared_ptr<RequestTask> &task) = 0;
+};
 
 class RequestTaskImpl : public RequestTask,
                         public std::enable_shared_from_this<RequestTaskImpl> {
 
   struct HandleInfo {
     CURL *handle;
-
-    const std::shared_ptr<Request> request;
     std::string request_hash;
     curl_slist *request_headers;
 
-    std::string response;
-    std::unordered_map<std::string, std::string> response_headers;
-
-    explicit HandleInfo(std::shared_ptr<Request> req);
+    explicit HandleInfo(const std::shared_ptr<Request>& req, RequestTaskImpl* task);
     ~HandleInfo();
 
-    void ConfigureHeaders();
-    void ConfigureCurlHandle();
+    void ConstructHeaders(const std::shared_ptr<Request>& request);
+    void ConstructCurlHandle(const std::shared_ptr<Request>& request, RequestTaskImpl* task);
   };
 
 public:
-  RequestTaskImpl(const std::shared_ptr<Request> request,
-                  const std::weak_ptr<RequestTaskDelegate> &delegate);
+  RequestTaskImpl(std::shared_ptr<Request> request,
+                  const std::weak_ptr<RequestTaskInternalDelegate> &delegate);
   virtual ~RequestTaskImpl();
 
   std::string taskIdentifier() const override;
-  void setDelegate(std::weak_ptr<RequestTaskDelegate> delegate) override;
   void setCompletionCallback(CompletionCallback completionCallback);
 
-  void resume() override;
+  void Resume() override;
 
-  void cancel() override;
-  bool cancelled() override;
+  void Cancel() override;
+  bool isCancelled() override;
 
-  void didCancel();
-  void didFinished(HttpStatusCode http_code, ResponseCode response_code);
+  void DidCancelled();
+  void DidFinished(HttpStatusCode http_code, ResponseCode response_code);
+
+  void OnReceiveData(char *data, size_t length);
+  void OnReceiveHeader(char *data, size_t length);
 
   CURL *handle();
 
 private:
-  void fillMetrics();
+  void FillMetrics();
 
 private:
   bool cancelled_;
-  std::weak_ptr<RequestTaskDelegate> delegate_;
+  std::weak_ptr<RequestTaskInternalDelegate> internal_delegate_;
   std::unique_ptr<HandleInfo> handle_;
+  std::shared_ptr<ResponseImpl> response_;
 
   const std::string identifier_;
 

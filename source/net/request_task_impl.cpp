@@ -1,40 +1,36 @@
 #include "request_task_impl.h"
 #include "base/logging.h"
 #include "utils/time_utils.h"
-#include <ffnetwork/response_impl.h>
+#include <net/response_impl.h>
 #include <sstream>
 #include <utility>
 
 namespace ffnetwork {
 
 RequestTaskImpl::RequestTaskImpl(
-    const std::shared_ptr<Request> request,
-    const std::weak_ptr<RequestTaskDelegate> &delegate)
-    : request_(request), cancelled_(false), delegate_(delegate),
+    std::shared_ptr<Request> request,
+    const std::weak_ptr<RequestTaskInternalDelegate> &delegate)
+    : request_(request), cancelled_(false), internal_delegate_(delegate),
       metrics_(std::make_shared<Metrics>()), identifier_(request->hash()) {
-  handle_ = std::unique_ptr<HandleInfo>(new HandleInfo(request));
+  handle_ = std::unique_ptr<HandleInfo>(new HandleInfo(request, this));
+  response_ = std::make_shared<ResponseImpl>();
 }
 
 RequestTaskImpl::~RequestTaskImpl() = default;
 
 std::string RequestTaskImpl::taskIdentifier() const { return identifier_; }
 
-void RequestTaskImpl::cancel() {
-  cancelled_ = true;
-  if (auto delegate = delegate_.lock()) {
+void RequestTaskImpl::Cancel() {
+  if (auto delegate = internal_delegate_.lock()) {
     delegate->RequestTaskCancel(shared_from_this());
   }
 }
 
-bool RequestTaskImpl::cancelled() { return cancelled_; }
+bool RequestTaskImpl::isCancelled() { return cancelled_; }
 
-void RequestTaskImpl::setDelegate(std::weak_ptr<RequestTaskDelegate> delegate) {
-  delegate_ = delegate;
-}
-
-void RequestTaskImpl::resume() {
+void RequestTaskImpl::Resume() {
   metrics_->request_start_ms = NowTimeMillis();
-  if (auto delegate = delegate_.lock()) {
+  if (auto delegate = internal_delegate_.lock()) {
     delegate->RequestTaskStart(shared_from_this());
   }
 }
@@ -48,11 +44,14 @@ void RequestTaskImpl::setCompletionCallback(
 
 #pragma mark - HandleInfo
 
-RequestTaskImpl::HandleInfo::HandleInfo(std::shared_ptr<Request> req)
-    : handle(nullptr), request(req), request_hash(req->hash()),
-      request_headers(nullptr) {
+RequestTaskImpl::HandleInfo::HandleInfo(const std::shared_ptr<Request>& req,
+    RequestTaskImpl* task_ptr) :
+handle(nullptr),
+request_hash(req->hash()),
+request_headers(nullptr)
+{
   handle = curl_easy_init();
-  ConfigureCurlHandle();
+  ConstructCurlHandle(req, task_ptr);
 }
 
 RequestTaskImpl::HandleInfo::~HandleInfo() {
@@ -66,14 +65,15 @@ RequestTaskImpl::HandleInfo::~HandleInfo() {
   }
 }
 
-void RequestTaskImpl::HandleInfo::ConfigureCurlHandle() {
+void RequestTaskImpl::HandleInfo::ConstructCurlHandle(const std::shared_ptr<Request>& request,
+                                                      RequestTaskImpl* task_ptr) {
 
   curl_easy_setopt(handle, CURLOPT_URL, request->url().c_str());
   curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1L);
   curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_callback);
-  curl_easy_setopt(handle, CURLOPT_WRITEDATA, &response);
+  curl_easy_setopt(handle, CURLOPT_WRITEDATA, task_ptr);
   curl_easy_setopt(handle, CURLOPT_HEADERFUNCTION, header_callback);
-  curl_easy_setopt(handle, CURLOPT_WRITEHEADER, &response_headers);
+  curl_easy_setopt(handle, CURLOPT_WRITEHEADER, task_ptr);
 
   curl_easy_setopt(handle, CURLOPT_TIMEOUT, 30);
 
@@ -108,12 +108,12 @@ void RequestTaskImpl::HandleInfo::ConfigureCurlHandle() {
   }
 
   // Set custom headers
-  ConfigureHeaders();
+  ConstructHeaders(request);
   curl_easy_setopt(handle, CURLOPT_HEADEROPT, CURLHEADER_UNIFIED);
   curl_easy_setopt(handle, CURLOPT_HTTPHEADER, request_headers);
 }
 
-void RequestTaskImpl::HandleInfo::ConfigureHeaders() {
+void RequestTaskImpl::HandleInfo::ConstructHeaders(const std::shared_ptr<Request>& request) {
   struct curl_slist *headers = nullptr;
   for (auto const &header : request->headerMap()) {
     if (header.first == "Range") {
@@ -133,58 +133,46 @@ void RequestTaskImpl::HandleInfo::ConfigureHeaders() {
 
 size_t RequestTaskImpl::write_callback(char *data, size_t size, size_t nitems,
                                        void *str) {
-  auto *string_buffer = static_cast<std::string *>(str);
-  if (string_buffer == nullptr) {
+  auto * task_ptr = static_cast<RequestTaskImpl *>(str);
+  if (task_ptr == nullptr) {
     return 0;
   }
-  string_buffer->append(data, size * nitems);
+  task_ptr->OnReceiveData(data, size * nitems);
   return size * nitems;
 }
 
 size_t RequestTaskImpl::header_callback(char *data, size_t size, size_t nitems,
                                         void *str) {
-  auto headers =
-      reinterpret_cast<std::unordered_map<std::string, std::string> *>(str);
-  std::string header(data, size * nitems), key, value;
-  size_t pos;
-  if ((pos = header.find(':')) != std::string::npos) {
-    key = header.substr(0, pos);
-    value = header.substr(std::min(pos + 2, header.length()));
+  auto * task_ptr = static_cast<RequestTaskImpl *>(str);
+  if (task_ptr == nullptr) {
+    return 0;
   }
 
-  if (!key.empty()) {
-    (*headers)[key] = value;
-  }
-
+  task_ptr->OnReceiveHeader(data, size * nitems);
   return size * nitems;
 }
 
-void RequestTaskImpl::didFinished(HttpStatusCode http_code,
+void RequestTaskImpl::DidFinished(HttpStatusCode http_code,
                                   ResponseCode response_code) {
   auto request = request_;
-  const auto *data = (const unsigned char *)handle_->response.c_str();
-  size_t data_length = handle_->response.size();
 
   FF_LOG_P(DEBUG, "Got response for: %s", request->url().c_str());
   FF_LOG_P(DEBUG, "Response code: %lu", http_code);
-  FF_LOG_P(DEBUG, "Response size: %lu", data_length);
+  FillMetrics();
 
-  fillMetrics();
-
-  std::shared_ptr<Response> new_response = std::make_shared<ResponseImpl>(
-      request, data, data_length, http_code, response_code, metrics_, false);
-
-  auto &response_headers = new_response->headerMap();
-  response_headers = std::move(handle_->response_headers);
+  response_->Construct(request, http_code, response_code, metrics_);
 
   if (completion_callback_) {
-    completion_callback_(new_response);
+    completion_callback_(response_);
   }
 }
 
-void RequestTaskImpl::didCancel() {
+void RequestTaskImpl::DidCancelled() {
+
+  cancelled_ = true;
+
   std::shared_ptr<Response> cancelled_response = std::make_shared<ResponseImpl>(
-      request_, nullptr, 0, HttpStatusCode::StatusCodeInvalid,
+      request_, HttpStatusCode::StatusCodeInvalid,
       ResponseCode::UserCancel, metrics_, true);
 
   if (completion_callback_) {
@@ -192,7 +180,25 @@ void RequestTaskImpl::didCancel() {
   }
 }
 
-void RequestTaskImpl::fillMetrics() {
+void RequestTaskImpl::OnReceiveData(char *data, size_t length) {
+  FF_LOG(INFO) << "receive data: " << length;
+}
+
+void RequestTaskImpl::OnReceiveHeader(char *data, size_t length) {
+  std::string header(data, length), key, value;
+  size_t pos;
+  if ((pos = header.find(':')) != std::string::npos) {
+    key = header.substr(0, pos);
+    value = header.substr(std::min(pos + 2, header.length()));
+  }
+
+  if (!key.empty()) {
+    response_->headerMap()[key] = value;
+    FF_LOG(INFO) << "receive header: " << key << ": " << value;
+  }
+}
+
+void RequestTaskImpl::FillMetrics() {
 
   if (!handle_->handle) {
     return;

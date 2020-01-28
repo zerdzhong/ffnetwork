@@ -9,7 +9,7 @@
 #include "request_task_impl.h"
 #include "utils/time_utils.h"
 #include <cstring>
-#include <ffnetwork/response_impl.h>
+#include <net/response_impl.h>
 #include <unistd.h>
 #include <vector>
 
@@ -42,9 +42,11 @@ std::shared_ptr<Client> CreateCurlClient() {
 }
 
 #pragma mark - CurlClient
-CurlClient::CurlClient()
-    : have_new_request_(false), is_terminated_(false), use_multi_wait_(true),
-      request_thread_("CurlClient") {
+CurlClient::CurlClient() :
+is_terminated_(false),
+use_multi_wait_(true),
+request_thread_("CurlClient")
+{
   ConfigCurlGlobalState(true);
   curl_multi_handle_ = curl_multi_init();
   curl_multi_setopt(curl_multi_handle_, CURLMOPT_MAXCONNECTS, MAX_CONNECTIONS);
@@ -61,7 +63,7 @@ CurlClient::~CurlClient() {
 
   // Remove any remaining requests
   std::vector<std::string> hashes;
-  for (auto &p : handles_) {
+  for (auto &p : request_task_map_) {
     hashes.push_back(p.first);
     curl_multi_remove_handle(curl_multi_handle_, p.second->handle());
   }
@@ -83,7 +85,7 @@ CurlClient::PerformRequest(const std::shared_ptr<Request> &request,
   FF_LOG_P(INFO, "PerformRequest url %s", request->url().c_str());
 
   auto request_task = TaskWithRequest(request, callback);
-  request_task->resume();
+  request_task->Resume();
 
   return request_task;
 }
@@ -99,7 +101,7 @@ CurlClient::TaskWithRequest(const std::shared_ptr<Request> &request,
       std::make_shared<RequestTaskImpl>(request, shared_from_this());
   request_task->setCompletionCallback(callback);
 
-  handles_[request_hash] = request_task;
+  request_task_map_[request_hash] = request_task;
 
   return request_task;
 }
@@ -150,7 +152,7 @@ void CurlClient::Run() {
 #pragma mark - private_method
 
 void CurlClient::CleanupRequest(const std::string &hash) {
-  handles_.erase(hash);
+  request_task_map_.erase(hash);
 }
 
 bool CurlClient::HandleCurlMsg() {
@@ -183,8 +185,8 @@ bool CurlClient::HandleCurlMsg() {
       curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &status_code);
 
       // Look up response data and original request
-      auto task = handles_[*request_hash];
-      task->didFinished(HttpStatusCode(status_code), response_code);
+      auto task = request_task_map_[*request_hash];
+      task->DidFinished(HttpStatusCode(status_code), response_code);
 
       curl_multi_remove_handle(curl_multi_handle_, handle);
       CleanupRequest(*request_hash);
@@ -268,12 +270,12 @@ void CurlClient::WaitFD(long timeout_ms) {
 
 void CurlClient::CancelRequest(const std::string &hash) {
 
-  if (handles_.find(hash) == handles_.end()) {
+  if (request_task_map_.find(hash) == request_task_map_.end()) {
     return;
   }
 
-  auto &request_task = handles_[hash];
-  request_task->didCancel();
+  auto &request_task = request_task_map_[hash];
+  request_task->DidCancelled();
 
   curl_multi_remove_handle(curl_multi_handle_, request_task->handle());
   CleanupRequest(hash);
@@ -281,14 +283,13 @@ void CurlClient::CancelRequest(const std::string &hash) {
 
 void CurlClient::StartRequest(const std::string &hash) {
 
-  if (handles_.find(hash) == handles_.end()) {
+  if (request_task_map_.find(hash) == request_task_map_.end()) {
     return;
   }
 
-  auto &request_task = handles_[hash];
+  auto &request_task = request_task_map_[hash];
 
   curl_multi_add_handle(curl_multi_handle_, request_task->handle());
-  have_new_request_ = true;
 }
 
 } // namespace ffnetwork

@@ -3,47 +3,46 @@
 //
 
 #include <cstring>
-#include <ffnetwork/response_impl.h>
+#include <net/response_impl.h>
 #include <sstream>
 
 namespace ffnetwork {
 
+ResponseImpl::ResponseImpl() : cancelled_(false) {}
+
 ResponseImpl::ResponseImpl(const std::shared_ptr<Request> &request,
-                           const unsigned char *data, size_t data_length,
                            HttpStatusCode status_code,
                            ResponseCode response_code,
                            const std::shared_ptr<Metrics> &metrics,
                            bool cancelled)
-    : request_(request), metrics_(metrics),
-      data_(data_length == 0 ? nullptr : (unsigned char *)malloc(data_length)),
-      data_length_(data_length), status_code_(status_code),
+    : request_(request), metrics_(metrics), status_code_(status_code),
       response_code_(response_code), cancelled_(cancelled) {
-  if (data_length > 0) {
-    memcpy(data_, data, data_length);
-  }
 }
 
 ResponseImpl::ResponseImpl(const std::string &serialised,
                            const unsigned char *data, size_t data_length,
                            const std::shared_ptr<Response> &response)
-    : data_(data_length == 0 ? nullptr : (unsigned char *)malloc(data_length)),
-      data_length_(data_length),
-      status_code_(HttpStatusCode::StatusCodeInvalid),
+    : status_code_(HttpStatusCode::StatusCodeInvalid),
       response_code_(ResponseCode::OK), cancelled_(false) {}
 
-ResponseImpl::~ResponseImpl() {}
+ResponseImpl::~ResponseImpl() = default;
 
-const std::shared_ptr<Request> ResponseImpl::request() const {
+void ResponseImpl::Construct(const std::shared_ptr<Request> &request,
+               HttpStatusCode status_code, ResponseCode response_code,
+               const std::shared_ptr<Metrics> &metrics)
+{
+  request_ = request;
+  status_code_ = status_code;
+  response_code_ = response_code;
+  metrics_ = metrics;
+}
+
+std::shared_ptr<Request> ResponseImpl::request() const {
   return request_;
 }
 
-const std::shared_ptr<Metrics> ResponseImpl::metrics() const {
+std::shared_ptr<Metrics> ResponseImpl::metrics() const {
   return metrics_;
-}
-
-const unsigned char *ResponseImpl::data(size_t &data_length) const {
-  data_length = data_length_;
-  return data_;
 }
 
 HttpStatusCode ResponseImpl::statusCode() const { return status_code_; }

@@ -13,19 +13,23 @@ namespace ffnetwork {
 
 class ResponseImpl : public Response {
 public:
+  ResponseImpl();
   ResponseImpl(const std::shared_ptr<Request> &request,
-               const unsigned char *data, size_t data_length,
                HttpStatusCode status_code, ResponseCode response_code,
                const std::shared_ptr<Metrics> &metrics, bool cancelled);
   ResponseImpl(const std::string &serialised, const unsigned char *data,
                size_t data_length,
                const std::shared_ptr<Response> &response = nullptr);
+
   virtual ~ResponseImpl();
 
+  void Construct(const std::shared_ptr<Request> &request,
+                 HttpStatusCode status_code, ResponseCode response_code,
+                 const std::shared_ptr<Metrics> &metrics);
+
   // Response
-  const std::shared_ptr<Request> request() const override;
-  const std::shared_ptr<Metrics> metrics() const override;
-  const unsigned char *data(size_t &data_length) const override;
+  std::shared_ptr<Request> request() const override;
+  std::shared_ptr<Metrics> metrics() const override;
   HttpStatusCode statusCode() const override;
   ResponseCode responseCode() const override;
   bool cancelled() const override;
@@ -41,8 +45,6 @@ public:
 private:
   std::shared_ptr<Request> request_;
   std::shared_ptr<Metrics> metrics_;
-  unsigned char *data_;
-  const size_t data_length_;
   HttpStatusCode status_code_;
   ResponseCode response_code_;
   const bool cancelled_;

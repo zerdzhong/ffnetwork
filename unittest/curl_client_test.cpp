@@ -131,14 +131,14 @@ TEST(CurlClientTests, Cancel) {
         cv.notify_one();
       });
 
-  request_task->cancel();
+  request_task->Cancel();
 
   std::unique_lock<std::mutex> lock(mutex);
   while (!request_done) {
     cv.wait(lock);
   }
 
-  EXPECT_EQ(request_task->cancelled(), true);
+  EXPECT_EQ(request_task->isCancelled(), true);
   EXPECT_NE((void *)0, cancelled_response.get());
   EXPECT_EQ(cancelled_response->cancelled(), true);
   EXPECT_EQ(cancelled_response->responseCode(), ResponseCode::UserCancel);
