@@ -10,7 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: fetch submodule
-      run: git submodule init & git submodule update
+      run: git submodule init && git submodule update
     - name: install dependencies
       run: ./ci/install-linux.sh
     - name: build & test

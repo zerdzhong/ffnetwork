@@ -12,42 +12,37 @@ namespace ffbase {
 
 template <class T> class CFRef {
 public:
-    CFRef(T instance) : instance_(instance) {}
-    CFRef() : instance_(nullptr) {}
-    
-    ~CFRef() {
-        if (instance_ != nullptr) {
-            CFRelease(instance_);
-        }
-        
-        instance_ = nullptr;
+  CFRef(T instance) : instance_(instance) {}
+  CFRef() : instance_(nullptr) {}
+
+  ~CFRef() {
+    if (instance_ != nullptr) {
+      CFRelease(instance_);
     }
-    
-    void Reset(T instance) {
-        if (instance_ == instance) {
-          return;
-        }
-        if (instance_ != nullptr) {
-            CFRelease(instance_);
-        }
-        
-        instance_ = instance;
+
+    instance_ = nullptr;
+  }
+
+  void Reset(T instance) {
+    if (instance_ == instance) {
+      return;
     }
-    
-    operator T() const {
-        return instance_;
+    if (instance_ != nullptr) {
+      CFRelease(instance_);
     }
-    
-    operator bool() const {
-        return instance_ != nullptr;
-    }
-    
+
+    instance_ = instance;
+  }
+
+  operator T() const { return instance_; }
+
+  operator bool() const { return instance_ != nullptr; }
+
 private:
-    T instance_;
-    FF_DISALLOW_COPY_AND_ASSIGN(CFRef);
+  T instance_;
+  FF_DISALLOW_COPY_AND_ASSIGN(CFRef);
 };
 
+} // namespace ffbase
 
-}
-
-#endif //FFBASE_CF_REFERENCE_UTILS_H
+#endif // FFBASE_CF_REFERENCE_UTILS_H

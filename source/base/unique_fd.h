@@ -11,17 +11,16 @@
 namespace ffbase {
 namespace internal {
 
-    struct UniqueFDTraits {
-        static int InvalidValue() { return -1; }
-        static bool IsValid(int value) { return value >= 0; }
-        static void Free(int fd) { close(fd); };
-    };
+struct UniqueFDTraits {
+  static int InvalidValue() { return -1; }
+  static bool IsValid(int value) { return value >= 0; }
+  static void Free(int fd) { close(fd); };
+};
 
-}  //end of namespace internal
-
+} // end of namespace internal
 
 using UniqueFD = UniqueObject<int, internal::UniqueFDTraits>;
 
-}//end of namespace ffbase
+} // end of namespace ffbase
 
-#endif //FFBASE_UNIQUE_FD_H
+#endif // FFBASE_UNIQUE_FD_H

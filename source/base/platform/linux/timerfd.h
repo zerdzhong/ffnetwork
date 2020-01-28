@@ -13,17 +13,18 @@
 #else
 
 #define FF_TIMERFD_AVAIABLE = 0
-#include <sys/types.h>
 #include <linux/time.h>
+#include <sys/types.h>
 
-#define TFD_TIMER_ABSTIME (1<<0)
-#define TFD_TIMER_CANCEL_ON_SET (1<<1)
+#define TFD_TIMER_ABSTIME (1 << 0)
+#define TFD_TIMER_CANCEL_ON_SET (1 << 1)
 
 #define TFD_CLOEXEC O_CLOEXEC
 #define TFD_NONBLOCK O_NONBLOCK
 
 int timerfd_create(int clockid, int flags);
-int timerfd_settime(int ufc, int flag, const struct itimerspec* utmr, struct itimerspec* otmr);
+int timerfd_settime(int ufc, int flag, const struct itimerspec *utmr,
+                    struct itimerspec *otmr);
 
 #endif
 
@@ -32,6 +33,6 @@ namespace ffbase {
 bool TimerRearm(int fd, TimePoint time_point);
 bool TimerDrain(int fd);
 
-}
+} // namespace ffbase
 
 #endif

@@ -5,13 +5,12 @@
 #ifndef FFBASE_WAITABLE_EVENT_H
 #define FFBASE_WAITABLE_EVENT_H
 
+#include "macros.h"
 #include "thread_annotations.h"
 #include "time/time_delta.h"
-#include "macros.h"
 
 #include <condition_variable>
 #include <mutex>
-
 
 namespace ffbase {
 
@@ -20,34 +19,33 @@ namespace ffbase {
 // This class is thread-safe.
 class AutoResetWaitableEvent final {
 public:
-    AutoResetWaitableEvent() {}
-    ~AutoResetWaitableEvent() {}
-    
-    // Put the event in the signaled state. Exactly one |Wait()| will be unblocked
-    // and the event will be returned to the unsignaled state.
-    void Signal();
-    
-    // Blocks the calling thread until the event is signaled. Upon unblocking, the
-    // event is returned to the unsignaled state
-    void Wait();
-    
-    // Like |Wait()|, but with a timeout. Also unblocks if |timeout_microseconds|
-    // without being signaled in which case it returns true (otherwise, it returns
-    // false).
-    bool WaitWithTimeout(TimeDelta timeout);
-    
-    bool IsSignaledForTest();
-    
+  AutoResetWaitableEvent() {}
+  ~AutoResetWaitableEvent() {}
+
+  // Put the event in the signaled state. Exactly one |Wait()| will be unblocked
+  // and the event will be returned to the unsignaled state.
+  void Signal();
+
+  // Blocks the calling thread until the event is signaled. Upon unblocking, the
+  // event is returned to the unsignaled state
+  void Wait();
+
+  // Like |Wait()|, but with a timeout. Also unblocks if |timeout_microseconds|
+  // without being signaled in which case it returns true (otherwise, it returns
+  // false).
+  bool WaitWithTimeout(TimeDelta timeout);
+
+  bool IsSignaledForTest();
+
 private:
-    std::condition_variable cv_;
-    std::mutex mutex_;
-    // True if this event is in the signaled state.
-    bool signaled_ = false;
-    
-    FF_DISALLOW_COPY_AND_ASSIGN(AutoResetWaitableEvent);
+  std::condition_variable cv_;
+  std::mutex mutex_;
+  // True if this event is in the signaled state.
+  bool signaled_ = false;
+
+  FF_DISALLOW_COPY_AND_ASSIGN(AutoResetWaitableEvent);
 };
 
-}//end of namespace ffbase
+} // end of namespace ffbase
 
-
-#endif //FFNETWORK_WAITABLE_EVENT_H
+#endif // FFNETWORK_WAITABLE_EVENT_H

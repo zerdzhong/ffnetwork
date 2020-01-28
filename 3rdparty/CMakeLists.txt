@@ -19,6 +19,7 @@
     set(OPENSSL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/openssl")
     set(OPENSSL_INCLUDE_DIR "${OPENSSL_DIR}/include" CACHE STRING "OpenSSL Includes" FORCE)
     set(OPENSSL_VERSION "1.0.0" CACHE STRING "OpenSSL Version" FORCE)
+    execute_process(COMMAND ls ${OPENSSL_DIR}/config)
     message(STATUS "Make Results:")
     execute_process(COMMAND sh ${OPENSSL_DIR}/config no-asm
             WORKING_DIRECTORY ${OPENSSL_DIR})

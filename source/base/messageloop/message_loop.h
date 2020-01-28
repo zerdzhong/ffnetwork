@@ -6,11 +6,11 @@
 #define FFBASE_MESSAGE_LOOP_H
 
 #include "macros.h"
-#include "time/time_point.h"
 #include "task_runner.h"
+#include "time/time_point.h"
 #include <cstdint>
-#include <memory>
 #include <functional>
+#include <memory>
 
 namespace ffbase {
 
@@ -20,41 +20,41 @@ class TaskQueueId;
 
 class MessageLoop {
 public:
-    static MessageLoop& GetCurrent();
-    
-    void Run();
-    void RunForTime(TimeDelta delay);
-    
-    bool IsRunning();
-    
-    void Terminate();
-    void AddTaskObserver(intptr_t key, std::function<void()> callback);
-    void RemoveObserver(intptr_t key);
-    
-    void RunExpiredTasksNow();
-    
-    std::shared_ptr<TaskRunner> GetTaskRunner() const;
-    
-    static void EnsureInitializedForCurrentThread();
-    static bool IsInitializedForCurrentThread();
-    static TaskQueueId GetCurrentTaskQueueId();
+  static MessageLoop &GetCurrent();
 
-    ~MessageLoop();
-    
+  void Run();
+  void RunForTime(TimeDelta delay);
+
+  bool IsRunning();
+
+  void Terminate();
+  void AddTaskObserver(intptr_t key, std::function<void()> callback);
+  void RemoveObserver(intptr_t key);
+
+  void RunExpiredTasksNow();
+
+  std::shared_ptr<TaskRunner> GetTaskRunner() const;
+
+  static void EnsureInitializedForCurrentThread();
+  static bool IsInitializedForCurrentThread();
+  static TaskQueueId GetCurrentTaskQueueId();
+
+  ~MessageLoop();
+
 private:
-    friend MessageLoopImpl;
-    friend TaskRunner;
-    
-    std::shared_ptr<MessageLoopImpl> loop_;
-    std::shared_ptr<TaskRunner> task_runner_;
-    
-    MessageLoop();
-    
-    std::shared_ptr<MessageLoopImpl> GetLoopImpl() const;
-    
-    FF_DISALLOW_COPY_AND_ASSIGN(MessageLoop);
+  friend MessageLoopImpl;
+  friend TaskRunner;
+
+  std::shared_ptr<MessageLoopImpl> loop_;
+  std::shared_ptr<TaskRunner> task_runner_;
+
+  MessageLoop();
+
+  std::shared_ptr<MessageLoopImpl> GetLoopImpl() const;
+
+  FF_DISALLOW_COPY_AND_ASSIGN(MessageLoop);
 };
 
-}
+} // namespace ffbase
 
-#endif //FFNETWORK_MESSAGE_LOOP_H
+#endif // FFNETWORK_MESSAGE_LOOP_H

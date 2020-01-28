@@ -8,35 +8,34 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <atomic>
 
-#include "message_loop_impl.h"
 #include "macros.h"
+#include "message_loop_impl.h"
 #include "platform/darwin/cf_reference_utils.h"
 
 namespace ffbase {
 
 class MessageLoopDarwin : public MessageLoopImpl {
 public:
-    MessageLoopDarwin();
-    ~MessageLoopDarwin() override;
-    
-private:
-    std::atomic_bool running_;
-    
-    CFRef<CFRunLoopRef> loop_;
-    CFRef<CFRunLoopTimerRef> delay_wake_timer_;
-    
-    void Run() override;
-    void Terminate() override;
-    void RunForTime(TimeDelta duration) override;
-    
-    void WakeUp(TimePoint time_point) override;
-    
-    static void OnTimerFire(CFRunLoopTimerRef timer, MessageLoopDarwin* loop);
+  MessageLoopDarwin();
+  ~MessageLoopDarwin() override;
 
-    FF_DISALLOW_COPY_AND_ASSIGN(MessageLoopDarwin);
+private:
+  std::atomic_bool running_;
+
+  CFRef<CFRunLoopRef> loop_;
+  CFRef<CFRunLoopTimerRef> delay_wake_timer_;
+
+  void Run() override;
+  void Terminate() override;
+  void RunForTime(TimeDelta duration) override;
+
+  void WakeUp(TimePoint time_point) override;
+
+  static void OnTimerFire(CFRunLoopTimerRef timer, MessageLoopDarwin *loop);
+
+  FF_DISALLOW_COPY_AND_ASSIGN(MessageLoopDarwin);
 };
 
-}
+} // namespace ffbase
 
-
-#endif //FFBASE_MESSAGE_LOOP_IMPL_DARWIN_H
+#endif // FFBASE_MESSAGE_LOOP_IMPL_DARWIN_H

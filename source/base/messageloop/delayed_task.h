@@ -6,8 +6,8 @@
 #define FFBASE_DELAYED_TASK_H
 
 #include "time/time_point.h"
-#include <queue>
 #include <functional>
+#include <queue>
 
 namespace ffbase {
 
@@ -15,23 +15,25 @@ using closure = std::function<void()>;
 
 class DelayedTask {
 public:
-    DelayedTask(size_t order, closure task, TimePoint target_time);
-    DelayedTask(const DelayedTask& other);
-    ~DelayedTask();
-    
-    const closure& GetTask() const;
-    TimePoint GetTargetTime() const;
-    
-    bool operator>(const DelayedTask& other) const;
-    
+  DelayedTask(size_t order, closure task, TimePoint target_time);
+  DelayedTask(const DelayedTask &other);
+  ~DelayedTask();
+
+  const closure &GetTask() const;
+  TimePoint GetTargetTime() const;
+
+  bool operator>(const DelayedTask &other) const;
+
 private:
-    size_t order_;
-    closure task_;
-    TimePoint target_time_;
+  size_t order_;
+  closure task_;
+  TimePoint target_time_;
 };
 
-using DelayedTaskQueue = std::priority_queue<DelayedTask, std::deque<DelayedTask>, std::greater<DelayedTask>>;
+using DelayedTaskQueue =
+    std::priority_queue<DelayedTask, std::deque<DelayedTask>,
+                        std::greater<DelayedTask>>;
 
-}
+} // namespace ffbase
 
-#endif //FFBASE_DELAYED_TASK_H
+#endif // FFBASE_DELAYED_TASK_H

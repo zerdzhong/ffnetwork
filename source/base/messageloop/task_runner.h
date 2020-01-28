@@ -17,23 +17,23 @@ class MessageLoopImpl;
 
 class TaskRunner {
 public:
-    virtual ~TaskRunner();
-    virtual void PostTask(closure task);
-    virtual void PostTaskForTime(closure task, TimePoint target_time);
-    virtual void PostDelayTask(closure task, TimeDelta delay);
-    
-    virtual bool RunTasksOnCurrentThread();
+  virtual ~TaskRunner();
+  virtual void PostTask(closure task);
+  virtual void PostTaskForTime(closure task, TimePoint target_time);
+  virtual void PostDelayTask(closure task, TimeDelta delay);
 
-    explicit TaskRunner(std::shared_ptr<MessageLoopImpl> loop);
-    
-    static void RunNowOrPostTask(const std::shared_ptr<TaskRunner>& runner, const closure& task);
-    
+  virtual bool RunTasksOnCurrentThread();
+
+  explicit TaskRunner(std::shared_ptr<MessageLoopImpl> loop);
+
+  static void RunNowOrPostTask(const std::shared_ptr<TaskRunner> &runner,
+                               const closure &task);
+
 private:
-    std::shared_ptr<MessageLoopImpl> loop_;
-    FF_DISALLOW_COPY_AND_ASSIGN(TaskRunner);
+  std::shared_ptr<MessageLoopImpl> loop_;
+  FF_DISALLOW_COPY_AND_ASSIGN(TaskRunner);
 };
 
+} // namespace ffbase
 
-}
-
-#endif //FFBASE_TASK_RUNNER_H
+#endif // FFBASE_TASK_RUNNER_H
