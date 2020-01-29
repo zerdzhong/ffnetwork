@@ -7,20 +7,19 @@
 
 namespace ffbase {
 
-typedef int LogLevel;
-
-// Default log levels. Negative values can be used for verbose log levels.
-constexpr LogLevel LOG_INFO = 0;
-constexpr LogLevel LOG_DEBUG = 1;
-constexpr LogLevel LOG_WARNING = 2;
-constexpr LogLevel LOG_ERROR = 3;
-constexpr LogLevel LOG_FATAL = 4;
-constexpr LogLevel LOG_NUM_LEVELS = 5;
+typedef enum LogLevel : uint {
+  INFO = 0,
+  DEBUG = 1,
+  WARNING = 2,
+  ERROR = 3,
+  FATAL = 4,
+  NUM_LEVELS = 5,
+} LogLevel ;
 
 #ifdef DEBUG
-const LogLevel LOG_DFATAL = LOG_ERROR;
+const LogLevel LOG_DFATAL = ERROR;
 #else
-const LogLevel LOG_DFATAL = LOG_FATAL;
+const LogLevel LOG_DFATAL = FATAL;
 #endif
 
 class LogMessageVoidify {
@@ -49,7 +48,7 @@ int GetVlogVerbosity();
 bool ShouldCreateLogMessage(LogLevel level);
 
 struct LogSettings {
-  LogLevel min_log_level = LOG_INFO;
+  LogLevel min_log_level = INFO;
 };
 
 void SetLogSettings(const LogSettings &settings);
@@ -59,11 +58,11 @@ int GetMinLogLevel();
 } // namespace ffbase
 
 #define FF_LOG_STREAM(level)                                                   \
-  ::ffbase::LogMessage(::ffbase::LOG_##level, __FILE__, __LINE__, nullptr)     \
+  ::ffbase::LogMessage(::ffbase::LogLevel::level, __FILE__, __LINE__, nullptr)     \
       .stream()
 
 #define FF_LOG_PRINT(level, ...)                                               \
-  ::ffbase::LogMessage(::ffbase::LOG_##level, __FILE__, __LINE__, nullptr)     \
+  ::ffbase::LogMessage(::ffbase::LogLevel::level, __FILE__, __LINE__, nullptr)     \
       .print_log(__VA_ARGS__)
 
 #define FF_LAZY_STREAM(stream, condition)                                      \
@@ -73,10 +72,10 @@ int GetMinLogLevel();
   (true || (ignored))                                                          \
       ? (void)0                                                                \
       : ::ffbase::LogMessageVoidify() &                                        \
-            ::ffbase::LogMessage(::fml::LOG_FATAL, 0, 0, nullptr).stream()
+            ::ffbase::LogMessage(::ffbase::LogLevel::FATAL, 0, 0, nullptr).stream()
 
 #define FF_LOG_IS_ON(level)                                                    \
-  (::ffbase::ShouldCreateLogMessage(::ffbase::LOG_##level))
+  (::ffbase::ShouldCreateLogMessage(::ffbase::LogLevel::level))
 
 #define FF_LOG(level) FF_LAZY_STREAM(FF_LOG_STREAM(level), FF_LOG_IS_ON(level))
 
@@ -84,7 +83,7 @@ int GetMinLogLevel();
   !(FF_LOG_IS_ON(level)) ? (void)0 : FF_LOG_PRINT(level, __VA_ARGS__)
 
 #define FF_CHECK(condition)                                                    \
-  FF_LAZY_STREAM(::ffbase::LogMessage(::ffbase::LOG_FATAL, __FILE__, __LINE__, \
+  FF_LAZY_STREAM(::ffbase::LogMessage(::ffbase::LogLevel::FATAL, __FILE__, __LINE__, \
                                       #condition)                              \
                      .stream(),                                                \
                  !(condition))

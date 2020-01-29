@@ -50,34 +50,29 @@ static os_log_t ffbase_darwin_log() {
 }
 
 void darwin_os_log(const LogLevel level, const char *log_info) {
-#ifdef Debug
-  std::cerr << log_info;
-  std::cerr.flush();
-#else
   switch (level) {
-  case LOG_INFO:
+  case LogLevel::INFO :
     os_log_info(FFBASE_DARWIN_LOG_HANDLE, "%s", log_info);
     break;
-  case LOG_WARNING:
+  case LogLevel::WARNING :
     os_log_debug(FFBASE_DARWIN_LOG_HANDLE, "%s", log_info);
     break;
-  case LOG_ERROR:
+  case LogLevel::ERROR:
     os_log_error(FFBASE_DARWIN_LOG_HANDLE, "%s", log_info);
     break;
-  case LOG_FATAL:
+  case LogLevel::FATAL:
     os_log_fault(FFBASE_DARWIN_LOG_HANDLE, "%s", log_info);
     break;
   }
-#endif
 }
 
 #endif
 
-const char *const kLogLevelNames[LOG_NUM_LEVELS] = {"INFO", "DEBUG", "WARNING",
+const char *const kLogLevelNames[NUM_LEVELS] = {"INFO", "DEBUG", "WARNING",
                                                     "ERROR", "FATAL"};
 
 const char *GetNameForLogLevel(LogLevel level) {
-  if (level >= 0 && level < LOG_NUM_LEVELS) {
+  if (level >= 0 && level < NUM_LEVELS) {
     return kLogLevelNames[level];
   }
 
@@ -128,7 +123,7 @@ LogMessage::~LogMessage() {
   std::cerr.flush();
 #endif
 
-  if (level_ >= LOG_FATAL) {
+  if (level_ >= FATAL) {
     abort();
   }
 }
@@ -151,13 +146,13 @@ LogSettings g_log_settings;
 
 void SetLogSettings(const LogSettings &settings) {
   // Validate the new settings as we set them.
-  g_log_settings.min_log_level = std::min(LOG_FATAL, settings.min_log_level);
+  g_log_settings.min_log_level = std::min(FATAL, settings.min_log_level);
 }
 
 LogSettings GetLogSettings() { return g_log_settings; }
 
 int GetMinLogLevel() {
-  return std::min(g_log_settings.min_log_level, LOG_FATAL);
+  return std::min(g_log_settings.min_log_level, FATAL);
 }
 
 int GetVlogVerbosity() { return std::max(-1, LOG_INFO - GetMinLogLevel()); }
