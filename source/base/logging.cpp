@@ -103,7 +103,7 @@ LogMessage::LogMessage(LogLevel level, const char *file, int line,
     stream_ << GetNameForLogLevel(level);
   }
 
-  stream_ << ":" << (level > LOG_INFO ? StripDots(file_) : StripPath(file_))
+  stream_ << ":" << (level > LogLevel::INFO ? StripDots(file_) : StripPath(file_))
           << "(" << line_ << ")] ";
 
   if (condition) {
@@ -154,8 +154,6 @@ LogSettings GetLogSettings() { return g_log_settings; }
 int GetMinLogLevel() {
   return std::min(g_log_settings.min_log_level, FATAL);
 }
-
-int GetVlogVerbosity() { return std::max(-1, LOG_INFO - GetMinLogLevel()); }
 
 bool ShouldCreateLogMessage(LogLevel level) {
   return level >= GetMinLogLevel();

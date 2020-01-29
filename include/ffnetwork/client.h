@@ -9,8 +9,10 @@
 #include <string>
 
 namespace ffnetwork {
+
 typedef std::function<void(const std::shared_ptr<Response> &)>
     CompletionCallback;
+
 class Client {
 public:
   virtual ~Client();
@@ -28,6 +30,7 @@ public:
 };
 
 extern std::shared_ptr<Client> CreateClient();
+
 } // namespace ffnetwork
 
 #endif

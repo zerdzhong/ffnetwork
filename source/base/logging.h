@@ -44,7 +44,6 @@ private:
   FF_DISALLOW_COPY_AND_ASSIGN(LogMessage);
 };
 
-int GetVlogVerbosity();
 bool ShouldCreateLogMessage(LogLevel level);
 
 struct LogSettings {
@@ -58,11 +57,11 @@ int GetMinLogLevel();
 } // namespace ffbase
 
 #define FF_LOG_STREAM(level)                                                   \
-  ::ffbase::LogMessage(::ffbase::LogLevel::level, __FILE__, __LINE__, nullptr)     \
+  ::ffbase::LogMessage(::ffbase::LogLevel::level, __FILE__, __LINE__, nullptr) \
       .stream()
 
 #define FF_LOG_PRINT(level, ...)                                               \
-  ::ffbase::LogMessage(::ffbase::LogLevel::level, __FILE__, __LINE__, nullptr)     \
+  ::ffbase::LogMessage(::ffbase::LogLevel::level, __FILE__, __LINE__, nullptr) \
       .print_log(__VA_ARGS__)
 
 #define FF_LAZY_STREAM(stream, condition)                                      \

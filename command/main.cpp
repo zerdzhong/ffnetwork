@@ -1,7 +1,7 @@
 #include <cstdlib>
-#include <ffnetwork/client.h>
 #include <iostream>
 #include <unistd.h>
+#include "downloader.cpp"
 
 struct GlobalArgs {
   const char *out_file_name; //-o option
@@ -45,16 +45,10 @@ int main(int argc, char **argv) {
 
   global_args.url = argv[optind];
 
-  auto client = ffnetwork::CreateClient();
-  auto request = ffnetwork::CreateRequest(global_args.url, {});
-  auto response = client->PerformRequestSync(request);
+  auto downloader = std::make_shared<fftool::Downloader>(
+      global_args.url, global_args.out_file_name);
 
-  std::cout << response->expectedContentLength();
-
-  std::cout << "headers :" << std::endl;
-  for (auto& kv : response->headerMap()) {
-    std::cout << kv.first << ": " << kv.second << std::endl;
-  }
+  downloader->SyncStart();
 
   return 0;
 }

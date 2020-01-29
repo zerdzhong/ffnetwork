@@ -11,7 +11,7 @@ class RequestTaskDelegate {
 public:
   virtual void OnReceiveResponse(RequestTask *task, std::shared_ptr<Response> response) = 0;
   virtual void OnReceiveData(RequestTask *task, char *data, size_t length) = 0;
-  virtual void OnRequestTaskComplete(RequestTask *task) = 0;
+  virtual void OnRequestTaskComplete(RequestTask *task, ResponseCode result) = 0;
   virtual bool ShouldPerformRedirect(RequestTask *task, Request *new_request) {
     return true;
   }

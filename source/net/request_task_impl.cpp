@@ -43,7 +43,7 @@ void RequestTaskImpl::setCompletionCallback(
 }
 
 void RequestTaskImpl::setTaskDelegate(
-		std::weak_ptr<RequestTaskDelegate> delegate) {
+    std::weak_ptr<RequestTaskDelegate> delegate) {
   delegate_ = delegate;
 }
 
@@ -70,8 +70,8 @@ RequestTaskImpl::HandleInfo::~HandleInfo() {
   }
 }
 
-void RequestTaskImpl::HandleInfo::ConstructCurlHandle(const std::shared_ptr<Request>& request,
-                                                      RequestTaskImpl* task_ptr) {
+void RequestTaskImpl::HandleInfo::ConstructCurlHandle(
+    const std::shared_ptr<Request> &request, RequestTaskImpl *task_ptr) {
 
   curl_easy_setopt(handle, CURLOPT_URL, request->url().c_str());
   curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1L);
@@ -118,7 +118,8 @@ void RequestTaskImpl::HandleInfo::ConstructCurlHandle(const std::shared_ptr<Requ
   curl_easy_setopt(handle, CURLOPT_HTTPHEADER, request_headers);
 }
 
-void RequestTaskImpl::HandleInfo::ConstructHeaders(const std::shared_ptr<Request>& request) {
+void RequestTaskImpl::HandleInfo::ConstructHeaders(
+    const std::shared_ptr<Request> &request) {
   struct curl_slist *headers = nullptr;
   for (auto const &header : request->headerMap()) {
     if (header.first == "Range") {
@@ -170,6 +171,9 @@ void RequestTaskImpl::DidFinished(HttpStatusCode http_code,
   if (completion_callback_) {
     completion_callback_(response_);
   }
+  if (auto delegate = delegate_.lock()) {
+    delegate->OnRequestTaskComplete(this, response_code);
+  }
 }
 
 void RequestTaskImpl::DidCancelled() {
@@ -177,11 +181,15 @@ void RequestTaskImpl::DidCancelled() {
   cancelled_ = true;
 
   std::shared_ptr<Response> cancelled_response = std::make_shared<ResponseImpl>(
-      request_, HttpStatusCode::StatusCodeInvalid,
-      ResponseCode::UserCancel, metrics_, true);
+      request_, HttpStatusCode::StatusCodeInvalid, ResponseCode::UserCancel,
+      metrics_, true);
 
   if (completion_callback_) {
     completion_callback_(cancelled_response);
+  }
+
+  if (auto delegate = delegate_.lock()) {
+    delegate->OnRequestTaskComplete(this, ResponseCode::UserCancel);
   }
 }
 
