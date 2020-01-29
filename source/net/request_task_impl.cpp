@@ -9,7 +9,7 @@ namespace ffnetwork {
 
 RequestTaskImpl::RequestTaskImpl(
     std::shared_ptr<Request> request,
-    const std::weak_ptr<RequestTaskInternalDelegate> &delegate)
+    const std::weak_ptr<RequestTaskInternalDelegate>& delegate)
     : request_(request), cancelled_(false), internal_delegate_(delegate),
       metrics_(std::make_shared<Metrics>()), identifier_(request->hash()) {
   handle_ = std::unique_ptr<HandleInfo>(new HandleInfo(request, this));
@@ -40,6 +40,11 @@ CURL *RequestTaskImpl::handle() { return handle_->handle; }
 void RequestTaskImpl::setCompletionCallback(
     CompletionCallback completionCallback) {
   completion_callback_ = std::move(completionCallback);
+}
+
+void RequestTaskImpl::setTaskDelegate(
+		std::weak_ptr<RequestTaskDelegate> delegate) {
+  delegate_ = delegate;
 }
 
 #pragma mark - HandleInfo
@@ -181,7 +186,9 @@ void RequestTaskImpl::DidCancelled() {
 }
 
 void RequestTaskImpl::OnReceiveData(char *data, size_t length) {
-  FF_LOG(INFO) << "receive data: " << length;
+  if (auto delegate = delegate_.lock()) {
+    delegate->OnReceiveData(this, data, length);
+  }
 }
 
 void RequestTaskImpl::OnReceiveHeader(char *data, size_t length) {
@@ -194,7 +201,6 @@ void RequestTaskImpl::OnReceiveHeader(char *data, size_t length) {
 
   if (!key.empty()) {
     response_->headerMap()[key] = value;
-    FF_LOG(INFO) << "receive header: " << key << ": " << value;
   }
 }
 
@@ -232,5 +238,4 @@ void RequestTaskImpl::FillMetrics() {
 
   metrics->request_end_ms = NowTimeMillis();
 }
-
 } // end of namespace ffnetwork

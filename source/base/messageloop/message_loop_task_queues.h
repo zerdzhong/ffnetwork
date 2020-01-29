@@ -101,8 +101,8 @@ private:
   static MessageLoopTaskQueues *instance_ FF_GUARDED_BY(creation_mutex_);
 
   std::unique_ptr<SharedMutex> queue_meta_mutex_;
-  std::map<TaskQueueId, std::unique_ptr<TaskQueueEntry>> queue_entries_;
-  std::map<TaskQueueId, std::unique_ptr<std::mutex>> queue_locks_;
+  std::map<TaskQueueId, std::unique_ptr<TaskQueueEntry>> queue_entries_ FF_GUARDED_BY(queue_meta_mutex_);
+  std::map<TaskQueueId, std::unique_ptr<std::mutex>> queue_locks_ ;
 
   size_t task_queue_id_counter_;
   std::atomic_int order_;

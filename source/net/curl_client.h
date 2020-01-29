@@ -45,7 +45,6 @@ private:
       request_task_map_;
 
   std::mutex client_mutex_;
-  std::condition_variable req_condition_;
 
   std::atomic<bool> is_terminated_;
   ffbase::Thread request_thread_;

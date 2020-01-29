@@ -12,6 +12,7 @@ public:
   virtual std::string taskIdentifier() const = 0;
 
   virtual void Resume() = 0;
+  virtual void setTaskDelegate(std::weak_ptr<RequestTaskDelegate> delegate) = 0;
 
   virtual void Cancel() = 0;
   virtual bool isCancelled() = 0;

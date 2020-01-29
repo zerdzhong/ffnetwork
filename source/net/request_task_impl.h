@@ -38,6 +38,7 @@ public:
 
   std::string taskIdentifier() const override;
   void setCompletionCallback(CompletionCallback completionCallback);
+  void setTaskDelegate(std::weak_ptr<RequestTaskDelegate> delegate) override ;
 
   void Resume() override;
 
@@ -58,6 +59,7 @@ private:
 private:
   bool cancelled_;
   std::weak_ptr<RequestTaskInternalDelegate> internal_delegate_;
+  std::weak_ptr<RequestTaskDelegate> delegate_;
   std::unique_ptr<HandleInfo> handle_;
   std::shared_ptr<ResponseImpl> response_;
 

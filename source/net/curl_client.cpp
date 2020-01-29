@@ -56,7 +56,6 @@ request_thread_("CurlClient")
 CurlClient::~CurlClient() {
 
   is_terminated_ = true;
-  req_condition_.notify_all();
   request_thread_.Join();
 
   std::unique_lock<std::mutex> client_lock(client_mutex_);
@@ -174,12 +173,10 @@ bool CurlClient::HandleCurlMsg() {
       curl_easy_getinfo(handle, CURLINFO_PRIVATE, &request_hash);
 
       if (msg->data.result != CURLE_OK) {
-        // TODO retry?
         FF_LOG(ERROR) << "CURL Error " << curl_easy_strerror(msg->data.result);
       }
 
-      ResponseCode response_code = ResponseCode::Invalid;
-      response_code = ConvertCurlCode(msg->data.result);
+      auto response_code = ConvertCurlCode(msg->data.result);
 
       // make response to send to callback
       long status_code = 0;
@@ -226,7 +223,8 @@ ResponseCode CurlClient::ConvertCurlCode(CURLcode code) {
 void CurlClient::WaitMulti(long timeout_ms) {
   int num_fds = -1;
   CURLMcode res =
-      curl_multi_wait(curl_multi_handle_, nullptr, 0, timeout_ms, &num_fds);
+      curl_multi_wait(curl_multi_handle_, nullptr, 0,
+                                  static_cast<int>(timeout_ms), &num_fds);
   if (res != CURLM_OK) {
     FF_LOG_P(ERROR, "curl_multi_wait not ok err_code:%d, desc:%s\n", res,
              curl_multi_strerror(res));
@@ -245,11 +243,11 @@ void CurlClient::WaitFD(long timeout_ms) {
   FD_ZERO(&E);
 
   if (curl_multi_fdset(curl_multi_handle_, &R, &W, &E, &max_fd)) {
-    FF_LOG_P(ERROR, "E: curl_multi_fdset\n");
+    FF_LOG_P(ERROR, "WaitFD fd set error\n");
   }
 
   if (curl_multi_timeout(curl_multi_handle_, &wait_time)) {
-    FF_LOG_P(ERROR, "E: curl_multi_timeout\n");
+    FF_LOG_P(ERROR, "curl_multi_timeout\n");
   }
 
   if (wait_time == -1) {
