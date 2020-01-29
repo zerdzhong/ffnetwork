@@ -32,6 +32,7 @@ public:
   std::shared_ptr<Metrics> metrics() const override;
   HttpStatusCode statusCode() const override;
   ResponseCode responseCode() const override;
+  uint64_t expectedContentLength() const override ;
   bool cancelled() const override;
   std::string serialise() const override;
   std::unordered_map<std::string, std::string> metadata() const override;

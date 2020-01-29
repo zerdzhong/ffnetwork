@@ -75,6 +75,7 @@ std::unordered_map<std::string, std::string> ResponseImpl::metadata() const {
 }
 
 std::string ResponseImpl::serialise() const { return std::string(); }
+uint64_t ResponseImpl::expectedContentLength() const { return 0; }
 
 std::string metrics_dump_info(Metrics *metrics) {
   std::stringstream iss;

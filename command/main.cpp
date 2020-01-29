@@ -49,8 +49,12 @@ int main(int argc, char **argv) {
   auto request = ffnetwork::CreateRequest(global_args.url, {});
   auto response = client->PerformRequestSync(request);
 
-  size_t data_length = 0;
-  std::cout << response->data(data_length);
+  std::cout << response->expectedContentLength();
+
+  std::cout << "headers :" << std::endl;
+  for (auto& kv : response->headerMap()) {
+    std::cout << kv.first << ": " << kv.second << std::endl;
+  }
 
   return 0;
 }

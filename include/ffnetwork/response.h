@@ -95,6 +95,7 @@ public:
 
   virtual HttpStatusCode statusCode() const = 0;
   virtual ResponseCode responseCode() const = 0;
+  virtual uint64_t expectedContentLength() const = 0;
   virtual bool cancelled() const = 0;
   virtual std::string serialise() const = 0;
   virtual std::string operator[](const std::string &header_name) const = 0;
