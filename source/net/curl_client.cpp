@@ -152,6 +152,7 @@ void CurlClient::Run() {
 #pragma mark - private_method
 
 void CurlClient::CleanupRequest(const std::string &hash) {
+  FF_CHECK(std::this_thread::get_id() == request_thread_.GetThreadId() );
   request_task_map_.erase(hash);
 }
 
@@ -270,6 +271,8 @@ void CurlClient::WaitFD(long timeout_ms) {
 
 void CurlClient::CancelRequest(const std::string &hash) {
 
+  FF_CHECK(std::this_thread::get_id() == request_thread_.GetThreadId());
+
   if (request_task_map_.find(hash) == request_task_map_.end()) {
     return;
   }
@@ -282,6 +285,8 @@ void CurlClient::CancelRequest(const std::string &hash) {
 }
 
 void CurlClient::StartRequest(const std::string &hash) {
+
+  FF_CHECK(std::this_thread::get_id() == request_thread_.GetThreadId());
 
   if (request_task_map_.find(hash) == request_task_map_.end()) {
     return;

@@ -15,7 +15,7 @@
 namespace ffbase {
 
 #pragma mark - life_cycle
-Thread::Thread(const std::string &name) : joined_(false), name_(name) {}
+Thread::Thread(const std::string& name) : joined_(false), name_(name) {}
 
 Thread::~Thread() { Join(); }
 
@@ -60,7 +60,13 @@ std::shared_ptr<TaskRunner> Thread::GetTaskRunner() const {
   return task_runner_;
 }
 
-std::string Thread::GetName() const { return name_; }
+std::thread::id Thread::GetThreadId() const {
+  return thread_->get_id();
+}
+
+std::string Thread::GetName() const {
+  return name_;
+}
 
 void Thread::SetCurrentThreadName(const std::string &name) {
   if (name.empty()) {

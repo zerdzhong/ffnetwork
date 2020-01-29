@@ -16,7 +16,7 @@ namespace ffbase {
 
 class Thread {
 public:
-  explicit Thread(const std::string &name = "");
+  explicit Thread(const std::string& name = "");
   ~Thread();
 
   void Start(closure thread_func = nullptr);
@@ -26,6 +26,7 @@ public:
 
   static void SetCurrentThreadName(const std::string &name);
   std::string GetName() const;
+  std::thread::id GetThreadId() const ;
 
 private:
   std::unique_ptr<std::thread> thread_;
