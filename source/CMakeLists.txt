@@ -17,6 +17,7 @@ set(FFNETWORK_SOURCE_FILES
         utils/time_utils.cpp
         utils/sha256.h
         utils/sha256.cpp
+        net/response_impl.h
         net/response_impl.cpp)
 
 
@@ -26,7 +27,6 @@ set(FFNETWORK_HEADER_FILES
         "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/request_task_delegate.h"
         "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/request.h"
         "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/response.h"
-        "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/response_impl.h"
         )
 
 add_library(ffnetwork ${FFNETWORK_SOURCE_FILES} ${FFNETWORK_HEADER_FILES})
