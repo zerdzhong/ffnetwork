@@ -58,6 +58,7 @@ FileMapping::FileMapping(const ffbase::UniqueFD &fd,
              is_writeable ? MAP_SHARED : MAP_PRIVATE, fd.get(), 0);
 
   if (mapping == MAP_FAILED) {
+    FF_LOG(ERROR) << strerror(errno);
     return ;
   }
 

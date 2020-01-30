@@ -34,9 +34,9 @@ public:
     kWrite,
   };
 
-  FileMapping(const ffbase::UniqueFD &fd,
-              std::initializer_list<Protection> protection = {
-                  Protection::kRead});
+  explicit FileMapping(const ffbase::UniqueFD &fd,
+                       std::initializer_list<Protection> protection = {
+                           Protection::kRead});
 
   ~FileMapping() override ;
 

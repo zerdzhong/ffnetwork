@@ -9,7 +9,7 @@
 #ifdef MAC
 #include "platform/darwin/message_loop_impl_darwin.h"
 #elif defined(LINUX)
-#include "message_loop_impl_linux.h"
+#include "platform/linux/message_loop_impl_linux.h"
 #endif
 
 namespace ffbase {

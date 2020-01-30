@@ -153,6 +153,7 @@ bool FileExists(const ffbase::UniqueFD& base_dir, const char* path) {
 bool UnlinkDirectory(const char* path) {
  return UnlinkDirectory(UniqueFD{AT_FDCWD}, path);
 }
+
 bool UnlinkDirectory(const ffbase::UniqueFD& base_dir, const char* path) {
   int res = unlinkat(base_dir.get(), path, AT_REMOVEDIR);
   if (res != 0) {
@@ -165,6 +166,7 @@ bool UnlinkDirectory(const ffbase::UniqueFD& base_dir, const char* path) {
 bool UnlinkFile(const char *path) {
   return UnlinkFile(UniqueFD{AT_FDCWD}, path);
 }
+
 bool UnlinkFile(const ffbase::UniqueFD& base_dir, const char* path) {
   int res = ::unlinkat(base_dir.get(), path, 0);
   if (res != 0) {

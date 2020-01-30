@@ -75,7 +75,21 @@ std::unordered_map<std::string, std::string> ResponseImpl::metadata() const {
 }
 
 std::string ResponseImpl::serialise() const { return std::string(); }
-uint64_t ResponseImpl::expectedContentLength() const { return 0; }
+uint64_t ResponseImpl::expectedContentLength() const {
+  return expected_content_length_;
+}
+
+void ResponseImpl::UpdateHeader(const std::string &key,
+                                const std::string &value) {
+
+  headers_[key] = value;
+
+  auto lower_key = key;
+  std::transform(lower_key.begin(), lower_key.end(), lower_key.begin(), ::tolower);
+  if (lower_key == "content-length") {
+    expected_content_length_ = std::strtoull(value.c_str(), nullptr, 0);
+  }
+}
 
 std::string metrics_dump_info(Metrics *metrics) {
   std::stringstream iss;

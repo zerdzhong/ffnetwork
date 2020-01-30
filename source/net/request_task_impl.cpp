@@ -208,7 +208,13 @@ void RequestTaskImpl::OnReceiveHeader(char *data, size_t length) {
   }
 
   if (!key.empty()) {
-    response_->headerMap()[key] = value;
+    response_->UpdateHeader(key, value);
+  }
+
+  if (header == "\r\n") {
+    if (auto delegate = delegate_.lock()) {
+      delegate->OnReceiveResponse(this, response_);
+    }
   }
 }
 

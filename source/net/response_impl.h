@@ -43,6 +43,8 @@ public:
   std::unordered_map<std::string, std::string> &headerMap() override;
   std::unordered_map<std::string, std::string> headerMap() const override;
 
+  void UpdateHeader(const std::string& key, const std::string& value);
+
 private:
   std::shared_ptr<Request> request_;
   std::shared_ptr<Metrics> metrics_;
@@ -51,6 +53,8 @@ private:
   const bool cancelled_;
   std::unordered_map<std::string, std::string> headers_;
   std::unordered_map<std::string, std::string> metadata_;
+
+  uint64_t expected_content_length_ = 0;
 };
 
 } // namespace ffnetwork
