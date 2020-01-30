@@ -9,6 +9,9 @@
 #include <thread>
 #include <atomic>
 
+#include "file.h"
+#include "mapping.h"
+
 namespace fftool {
 
 class Downloader : public std::enable_shared_from_this<Downloader>,
@@ -17,8 +20,10 @@ public:
   Downloader(const std::string& url, const std::string& path) :
   url_(url),
   path_(path),
-  download_finish_(false)
+  download_finish_(false),
+  output_fd_(ffbase::OpenFile(path_.c_str(), true, ffbase::FilePermission::kReadWrite))
   {
+    FF_DCHECK(output_fd_.is_valid());
   }
 
   void SyncStart() {
@@ -34,7 +39,6 @@ public:
     while (!download_finish_) {
       cv_.wait(lock);
     }
-
   }
 
   void AsyncStart(std::function<void()> complete_callback) {
@@ -43,10 +47,18 @@ public:
 #pragma mark- RequestTaskDelegate
   void
   OnReceiveResponse(ffnetwork::RequestTask *task,
-                    std::shared_ptr<ffnetwork::Response> response) override {}
+                    std::shared_ptr<ffnetwork::Response> response) override {
+    ffbase::TruncateFile(output_fd_, response->expectedContentLength());
+    if (!output_file_mapping_) {
+      output_file_mapping_ = std::unique_ptr<ffbase::FileMapping>(new ffbase::FileMapping(
+          output_fd_, {ffbase::FileMapping::Protection::kWrite}));
+    }
+  }
   void OnReceiveData(ffnetwork::RequestTask *task, char *data,
                      size_t length) override {
-    std::cout << "OnReceiveData :" << data;
+    auto * mapping = output_file_mapping_->GetMutableMapping();
+    ::memcpy(mapping + offset_, data, length);
+    offset_ += length;
   }
   void OnRequestTaskComplete(ffnetwork::RequestTask *task,
                              ffnetwork::ResponseCode result) override {
@@ -62,6 +74,10 @@ private:
   std::mutex mutex_;
   std::condition_variable cv_;
   std::atomic<bool> download_finish_;
+  int offset_ = 0;
+
+  ffbase::UniqueFD output_fd_;
+  std::unique_ptr<ffbase::FileMapping> output_file_mapping_;
 };
 
 }//namespace fftool
