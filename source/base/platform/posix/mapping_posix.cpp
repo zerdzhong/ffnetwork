@@ -5,6 +5,8 @@
 #include "mapping.h"
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <cstring>
+#include <cerrno>
 
 namespace ffbase {
 

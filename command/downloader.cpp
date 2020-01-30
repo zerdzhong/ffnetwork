@@ -8,6 +8,9 @@
 #include <memory>
 #include <thread>
 #include <atomic>
+#include <mutex>
+#include <cstring>
+#include <condition_variable>
 
 #include "file.h"
 #include "mapping.h"

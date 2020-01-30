@@ -5,6 +5,7 @@
 #include <cstring>
 #include <net/response_impl.h>
 #include <sstream>
+#include <algorithm>
 
 namespace ffnetwork {
 
