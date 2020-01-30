@@ -34,22 +34,29 @@ set(FFBASE_SOURCE_FILES
         thread/waitable_event.h
         thread/thread.h
         thread/thread.cpp
-        )
+        file.cpp
+        file.h
+        unique_fd.h
+        mapping.cpp
+        mapping.h)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(FFBASE_SOURCE_FILES ${FFBASE_SOURCE_FILES}
-            messageloop/message_loop_impl_darwin.h
-            messageloop/message_loop_impl_darwin.mm
+            platform/darwin/message_loop_impl_darwin.h
+            platform/darwin/message_loop_impl_darwin.mm
             platform/darwin/cf_reference_utils.mm
-            platform/darwin/cf_reference_utils.h unique_fd.h)
+            platform/darwin/cf_reference_utils.h
+            platform/posix/file_posix.cpp
+            platform/posix/mapping_posix.cpp)
 
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(FFBASE_SOURCE_FILES ${FFBASE_SOURCE_FILES}
-            messageloop/message_loop_impl_linux.h
-            messageloop/message_loop_impl_linux.cpp
+            platform/linux/message_loop_impl_linux.h
+            platform/linux/message_loop_impl_linux.cpp
             platform/linux/timerfd.h
             platform/linux/timerfd.cpp
-            )
+            platform/posix/file_posix.cpp
+            platform/posix/mapping_posix.cpp)
 endif ()
     
 set(FFBASE_HEADER_FILES )

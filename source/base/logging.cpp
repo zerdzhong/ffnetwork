@@ -54,6 +54,7 @@ void darwin_os_log(const LogLevel level, const char *log_info) {
   case LogLevel::INFO :
     os_log_info(FFBASE_DARWIN_LOG_HANDLE, "%s", log_info);
     break;
+  case LogLevel::DEBUG:
   case LogLevel::WARNING :
     os_log_debug(FFBASE_DARWIN_LOG_HANDLE, "%s", log_info);
     break;
@@ -62,6 +63,8 @@ void darwin_os_log(const LogLevel level, const char *log_info) {
     break;
   case LogLevel::FATAL:
     os_log_fault(FFBASE_DARWIN_LOG_HANDLE, "%s", log_info);
+    break;
+  default:
     break;
   }
 }

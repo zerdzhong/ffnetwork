@@ -16,7 +16,7 @@ set(SOURCE_FILES
         message_loop_task_queues_test.cpp
         message_loop_test.cpp
         waitable_event_test.cpp
-        thread_test.cpp)
+        thread_test.cpp file_test.cpp)
 
 add_executable(ffbase_unittest ${SOURCE_FILES})
 
