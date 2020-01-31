@@ -93,9 +93,15 @@ public:
   virtual std::shared_ptr<Request> request() const = 0;
   virtual std::shared_ptr<Metrics> metrics() const = 0;
 
+  virtual std::string url() const = 0;
+
   virtual HttpStatusCode statusCode() const = 0;
   virtual ResponseCode responseCode() const = 0;
   virtual uint64_t expectedContentLength() const = 0;
+  virtual std::string mimeType() const = 0;
+  virtual std::string encodingType() const = 0;
+  virtual std::string suggestedFileName() const = 0;
+
   virtual bool cancelled() const = 0;
   virtual std::string serialise() const = 0;
   virtual std::string operator[](const std::string &header_name) const = 0;

@@ -30,9 +30,18 @@ public:
   // Response
   std::shared_ptr<Request> request() const override;
   std::shared_ptr<Metrics> metrics() const override;
+
+  std::string url() const override ;
+  void setUrl(const std::string& url);
+
   HttpStatusCode statusCode() const override;
   ResponseCode responseCode() const override;
+
   uint64_t expectedContentLength() const override ;
+  std::string mimeType() const override ;
+  std::string encodingType() const override ;
+  std::string suggestedFileName() const override ;
+
   bool cancelled() const override;
   std::string serialise() const override;
   std::unordered_map<std::string, std::string> metadata() const override;
@@ -55,6 +64,11 @@ private:
   std::unordered_map<std::string, std::string> metadata_;
 
   uint64_t expected_content_length_ = 0;
+  std::string encoding_type_;
+  std::string mime_type_;
+  std::string suggested_file_name_;
+
+  std::string url_;
 };
 
 } // namespace ffnetwork

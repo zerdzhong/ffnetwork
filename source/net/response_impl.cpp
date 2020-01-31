@@ -6,6 +6,7 @@
 #include <net/response_impl.h>
 #include <sstream>
 #include <algorithm>
+#include "url.h"
 
 namespace ffnetwork {
 
@@ -17,8 +18,7 @@ ResponseImpl::ResponseImpl(const std::shared_ptr<Request> &request,
                            const std::shared_ptr<Metrics> &metrics,
                            bool cancelled)
     : request_(request), metrics_(metrics), status_code_(status_code),
-      response_code_(response_code), cancelled_(cancelled) {
-}
+      response_code_(response_code), cancelled_(cancelled) {}
 
 ResponseImpl::ResponseImpl(const std::string &serialised,
                            const unsigned char *data, size_t data_length,
@@ -36,6 +36,7 @@ void ResponseImpl::Construct(const std::shared_ptr<Request> &request,
   status_code_ = status_code;
   response_code_ = response_code;
   metrics_ = metrics;
+  setUrl(request->url());
 }
 
 std::shared_ptr<Request> ResponseImpl::request() const {
@@ -76,8 +77,21 @@ std::unordered_map<std::string, std::string> ResponseImpl::metadata() const {
 }
 
 std::string ResponseImpl::serialise() const { return std::string(); }
+
 uint64_t ResponseImpl::expectedContentLength() const {
   return expected_content_length_;
+}
+
+std::string ResponseImpl::mimeType() const {
+  return mime_type_;
+}
+
+std::string ResponseImpl::encodingType() const {
+  return encoding_type_;
+}
+
+std::string ResponseImpl::suggestedFileName() const {
+  return suggested_file_name_;
 }
 
 void ResponseImpl::UpdateHeader(const std::string &key,
@@ -87,8 +101,30 @@ void ResponseImpl::UpdateHeader(const std::string &key,
 
   auto lower_key = key;
   std::transform(lower_key.begin(), lower_key.end(), lower_key.begin(), ::tolower);
-  if (lower_key == "content-length") {
+  if ("content-length" == lower_key ) {
     expected_content_length_ = std::strtoull(value.c_str(), nullptr, 0);
+  } else if ("content-type" == lower_key) {
+    mime_type_ = value;
+    if (mime_type_.substr(mime_type_.length() - 2) == "\r\n" ) {
+      mime_type_.erase(mime_type_.length() - 2);
+    }
+  } else if ("transfer-encoding" == lower_key) {
+    encoding_type_ = value;
+    if (encoding_type_.substr(encoding_type_.length() - 2) == "\r\n" ) {
+      encoding_type_.erase(encoding_type_.length() - 2);
+    }
+  }
+}
+std::string ResponseImpl::url() const { return url_; }
+
+void ResponseImpl::setUrl(const std::string &url) {
+  url_ = url;
+  auto path = Url(url_).path();
+  auto last_slash_pos = path.find_last_of('/');
+  if ( last_slash_pos != std::string::npos) {
+    suggested_file_name_ = path.substr(last_slash_pos + 1);
+  } else {
+    suggested_file_name_ = path;
   }
 }
 
@@ -103,9 +139,13 @@ std::string metrics_dump_info(Metrics *metrics) {
       << "ssl_time_ms: " << metrics->ssl_time_ms << '\n'
       << "pretransfer_time_ms: " << metrics->pretransfer_time_ms << '\n'
       << "transfer_start_time_ms: " << metrics->transfer_start_time_ms << '\n'
-      << "totoal_time_ms: " << metrics->totoal_time_ms << '\n'
+      << "total_time_ms: " << metrics->totoal_time_ms << '\n'
       << "receive byte count: " << metrics->receive_byte_count << '\n'
-      << "send byte count: " << metrics->send_byte_count << '\n';
+      << "send byte count: " << metrics->send_byte_count << '\n'
+      << "download speed "
+      << metrics->receive_byte_count / 1024 / 1024 /
+             (metrics->totoal_time_ms / 1000)
+      << "MiB/s" << '\n';
 
   return iss.str();
 }

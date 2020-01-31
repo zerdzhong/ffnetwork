@@ -4,9 +4,9 @@
 #include "downloader.cpp"
 
 struct GlobalArgs {
-  const char *out_file_name; //-o option
+  std::string out_file_name; //-o option
   bool verbose;              //-v option
-  const char *url;
+  std::string url;
 } global_args;
 
 static const char *opt_string = "o:vh?";
@@ -17,9 +17,7 @@ void display_usage() {
 
 int main(int argc, char **argv) {
   /* Initialize globalArgs before we get to work. */
-  global_args.out_file_name = NULL;
   global_args.verbose = false;
-  global_args.url = NULL;
 
   int opt = 0;
 

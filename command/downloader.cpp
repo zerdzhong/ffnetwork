@@ -14,6 +14,7 @@
 
 #include "file.h"
 #include "mapping.h"
+#include "net/url.h"
 
 namespace fftool {
 
@@ -23,9 +24,12 @@ public:
   Downloader(const std::string& url, const std::string& path) :
   url_(url),
   path_(path),
-  download_finish_(false),
-  output_fd_(ffbase::OpenFile(path_.c_str(), true, ffbase::FilePermission::kReadWrite))
+  download_finish_(false)
   {
+
+    ToFullPath();
+    output_fd_ = ffbase::OpenFile(path_.c_str(), true, ffbase::FilePermission::kReadWrite);
+
     FF_DCHECK(output_fd_.is_valid());
   }
 
@@ -46,6 +50,32 @@ public:
 
   void AsyncStart(std::function<void()> complete_callback) {
 
+  }
+
+  void ToFullPath() {
+
+    if (path_.empty()) {
+      path_ = "./";// use current path
+    }
+
+    if (path_[path_.size()-1] != '/') {
+      return ;
+    }
+
+    auto url_path = ffnetwork::Url(url_).path();
+    auto last_slash_pos = url_path.find_last_of('/');
+
+    std::string file_name;
+
+    if ( last_slash_pos != std::string::npos) {
+      file_name = url_path.substr(last_slash_pos + 1);
+    } else {
+      file_name = url_path;
+    }
+
+    path_ += file_name;
+
+    return ;
   }
 #pragma mark- RequestTaskDelegate
   void

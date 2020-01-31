@@ -27,7 +27,7 @@ set(FFNETWORK_HEADER_FILES
         "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/request_task_delegate.h"
         "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/request.h"
         "${FFNETWORK_INCLUDE_DIRECTORY}/ffnetwork/response.h"
-        )
+        net/url.cpp net/url.h)
 
 add_library(ffnetwork ${FFNETWORK_SOURCE_FILES} ${FFNETWORK_HEADER_FILES})
 
