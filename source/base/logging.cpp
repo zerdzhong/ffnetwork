@@ -106,7 +106,7 @@ LogMessage::LogMessage(LogLevel level, const char *file, int line,
     stream_ << GetNameForLogLevel(level);
   }
 
-  stream_ << ":" << (level > LogLevel::INFO ? StripDots(file_) : StripPath(file_))
+  stream_ << ":" << StripPath(file_)
           << "(" << line_ << ")] ";
 
   if (condition) {
@@ -120,7 +120,9 @@ LogMessage::~LogMessage() {
 #if defined(ANDROID)
   android_os_log(level_, stream_.str().c_str());
 #elif (defined(MAC) || defined(IOS))
-  darwin_os_log(level_, stream_.str().c_str());
+//  darwin_os_log(level_, stream_.str().c_str());
+  std::cout << stream_.str();
+  std::cout.flush();
 #else
   std::cerr << stream_.str();
   std::cerr.flush();

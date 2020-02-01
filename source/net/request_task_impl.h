@@ -32,8 +32,8 @@ class RequestTaskImpl : public RequestTask,
   };
 
 public:
-  RequestTaskImpl(std::shared_ptr<Request> request,
-                  const std::weak_ptr<RequestTaskInternalDelegate> &delegate);
+  RequestTaskImpl(const std::shared_ptr<Request>& request,
+                  std::weak_ptr<RequestTaskInternalDelegate> delegate);
   virtual ~RequestTaskImpl();
 
   std::string taskIdentifier() const override;
@@ -57,7 +57,9 @@ private:
   void FillMetrics();
 
 private:
-  bool cancelled_;
+  const std::shared_ptr<Request> request_;
+  const std::shared_ptr<Metrics> metrics_;
+							
   std::weak_ptr<RequestTaskInternalDelegate> internal_delegate_;
   std::weak_ptr<RequestTaskDelegate> delegate_;
   std::unique_ptr<HandleInfo> handle_;
@@ -65,10 +67,8 @@ private:
 
   const std::string identifier_;
 
-  const std::shared_ptr<Metrics> metrics_;
-  const std::shared_ptr<Request> request_;
-
   CompletionCallback completion_callback_;
+  bool cancelled_;
 
   // Curl callbacks
 public:

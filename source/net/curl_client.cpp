@@ -14,9 +14,11 @@
 #include <vector>
 
 namespace {
+
+static auto *gMutex = ffbase::SharedMutex::Create();
+
 void ConfigCurlGlobalState(bool added_client) {
-  auto *mutex = ffbase::SharedMutex::Create();
-  ffbase::UniqueLock lock(*mutex);
+  ffbase::UniqueLock lock(*gMutex);
 
   static long curl_clients_active = 0;
 
@@ -44,8 +46,8 @@ std::shared_ptr<Client> CreateCurlClient() {
 #pragma mark - CurlClient
 CurlClient::CurlClient() :
 is_terminated_(false),
-use_multi_wait_(true),
-request_thread_("CurlClient")
+request_thread_("CurlClient"),
+use_multi_wait_(true)
 {
   ConfigCurlGlobalState(true);
   curl_multi_handle_ = curl_multi_init();
@@ -128,13 +130,14 @@ void CurlClient::Run() {
   auto &loop = ffbase::MessageLoop::GetCurrent();
 
   while (!is_terminated_) {
+
+    loop.RunForTime(ffbase::TimeDelta::FromMilliseconds(50));
+
     curl_multi_perform(curl_multi_handle_, &active_requests);
 
     if (HandleCurlMsg()) {
       continue;
     }
-
-    loop.RunForTime(ffbase::TimeDelta::FromMilliseconds(10));
 
     if (active_requests > 0) {
       if (use_multi_wait_) {
@@ -164,7 +167,6 @@ bool CurlClient::HandleCurlMsg() {
 
   while ((msg = curl_multi_info_read(curl_multi_handle_, &message_in_queue))) {
     ++msg_count;
-
     if (msg->msg == CURLMSG_DONE) {
 
       std::string *request_hash;
@@ -172,9 +174,6 @@ bool CurlClient::HandleCurlMsg() {
 
       curl_easy_getinfo(handle, CURLINFO_PRIVATE, &request_hash);
 
-      if (msg->data.result != CURLE_OK) {
-        FF_LOG(ERROR) << "CURL Error " << curl_easy_strerror(msg->data.result);
-      }
 
       auto response_code = ConvertCurlCode(msg->data.result);
 
@@ -189,8 +188,6 @@ bool CurlClient::HandleCurlMsg() {
       curl_multi_remove_handle(curl_multi_handle_, handle);
       CleanupRequest(*request_hash);
 
-    } else {
-      FF_LOG(ERROR) << "CURLMsg " << msg->msg;
     }
   }
 
@@ -213,7 +210,7 @@ ResponseCode CurlClient::ConvertCurlCode(CURLcode code) {
     break;
   }
   default:
-    response_code = ResponseCode::UnknownError;
+    response_code = ResponseCode(2000 + code);
     break;
   }
 

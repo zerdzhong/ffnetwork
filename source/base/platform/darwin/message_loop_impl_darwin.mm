@@ -91,7 +91,6 @@ void MessageLoopDarwin::WakeUp(TimePoint time_point) {
 void MessageLoopDarwin::OnTimerFire(CFRunLoopTimerRef timer, MessageLoopDarwin* loop) {
     @autoreleasepool {
         // RunExpiredTasksNow rearms the timer as appropriate via a call to WakeUp.
-        FF_LOG(INFO) << "OnTimerFire "<< TimePoint::Now().ToEpochDelta().ToMilliseconds();
         loop->RunExpiredTasksNow();
     }
 }

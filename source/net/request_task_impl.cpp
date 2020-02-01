@@ -7,53 +7,36 @@
 
 namespace ffnetwork {
 
-RequestTaskImpl::RequestTaskImpl(
-    std::shared_ptr<Request> request,
-    const std::weak_ptr<RequestTaskInternalDelegate>& delegate)
-    : request_(request), cancelled_(false), internal_delegate_(delegate),
-      metrics_(std::make_shared<Metrics>()), identifier_(request->hash()) {
-  handle_ = std::unique_ptr<HandleInfo>(new HandleInfo(request, this));
-  response_ = std::make_shared<ResponseImpl>();
-}
+#pragma mark - CurlCallback
 
-RequestTaskImpl::~RequestTaskImpl() = default;
-
-std::string RequestTaskImpl::taskIdentifier() const { return identifier_; }
-
-void RequestTaskImpl::Cancel() {
-  if (auto delegate = internal_delegate_.lock()) {
-    delegate->RequestTaskCancel(shared_from_this());
+size_t RequestTaskImpl::write_callback(char *data, size_t size, size_t nitems,
+                                       void *str) {
+  auto * task_ptr = static_cast<RequestTaskImpl *>(str);
+  if (task_ptr == nullptr) {
+    return 0;
   }
+  task_ptr->OnReceiveData(data, size * nitems);
+  return size * nitems;
 }
 
-bool RequestTaskImpl::isCancelled() { return cancelled_; }
-
-void RequestTaskImpl::Resume() {
-  metrics_->request_start_ms = NowTimeMillis();
-  if (auto delegate = internal_delegate_.lock()) {
-    delegate->RequestTaskStart(shared_from_this());
+size_t RequestTaskImpl::header_callback(char *data, size_t size, size_t nitems,
+                                        void *str) {
+  auto * task_ptr = static_cast<RequestTaskImpl *>(str);
+  if (task_ptr == nullptr) {
+    return 0;
   }
-}
 
-CURL *RequestTaskImpl::handle() { return handle_->handle; }
-
-void RequestTaskImpl::setCompletionCallback(
-    CompletionCallback completionCallback) {
-  completion_callback_ = std::move(completionCallback);
-}
-
-void RequestTaskImpl::setTaskDelegate(
-    std::weak_ptr<RequestTaskDelegate> delegate) {
-  delegate_ = delegate;
+  task_ptr->OnReceiveHeader(data, size * nitems);
+  return size * nitems;
 }
 
 #pragma mark - HandleInfo
 
 RequestTaskImpl::HandleInfo::HandleInfo(const std::shared_ptr<Request>& req,
-    RequestTaskImpl* task_ptr) :
-handle(nullptr),
-request_hash(req->hash()),
-request_headers(nullptr)
+                                        RequestTaskImpl* task_ptr) :
+    handle(nullptr),
+    request_hash(req->hash()),
+    request_headers(nullptr)
 {
   handle = curl_easy_init();
   ConstructCurlHandle(req, task_ptr);
@@ -135,27 +118,47 @@ void RequestTaskImpl::HandleInfo::ConstructHeaders(
   request_headers = headers;
 }
 
-#pragma mark - CurlCallback
+#pragma mark- RequestTaskImpl
 
-size_t RequestTaskImpl::write_callback(char *data, size_t size, size_t nitems,
-                                       void *str) {
-  auto * task_ptr = static_cast<RequestTaskImpl *>(str);
-  if (task_ptr == nullptr) {
-    return 0;
-  }
-  task_ptr->OnReceiveData(data, size * nitems);
-  return size * nitems;
+RequestTaskImpl::RequestTaskImpl(
+    const std::shared_ptr<Request> &request,
+    std::weak_ptr<RequestTaskInternalDelegate> delegate)
+    : request_(request), metrics_(std::make_shared<Metrics>()),
+      internal_delegate_(std::move(delegate)), identifier_(request->hash()),
+      cancelled_(false) {
+  handle_ = std::unique_ptr<HandleInfo>(new HandleInfo(request, this));
+  response_ = std::make_shared<ResponseImpl>();
 }
 
-size_t RequestTaskImpl::header_callback(char *data, size_t size, size_t nitems,
-                                        void *str) {
-  auto * task_ptr = static_cast<RequestTaskImpl *>(str);
-  if (task_ptr == nullptr) {
-    return 0;
-  }
+RequestTaskImpl::~RequestTaskImpl() = default;
 
-  task_ptr->OnReceiveHeader(data, size * nitems);
-  return size * nitems;
+std::string RequestTaskImpl::taskIdentifier() const { return identifier_; }
+
+void RequestTaskImpl::Cancel() {
+  if (auto delegate = internal_delegate_.lock()) {
+    delegate->RequestTaskCancel(shared_from_this());
+  }
+}
+
+bool RequestTaskImpl::isCancelled() { return cancelled_; }
+
+void RequestTaskImpl::Resume() {
+  metrics_->request_start_ms = NowTimeMillis();
+  if (auto delegate = internal_delegate_.lock()) {
+    delegate->RequestTaskStart(shared_from_this());
+  }
+}
+
+CURL *RequestTaskImpl::handle() { return handle_->handle; }
+
+void RequestTaskImpl::setCompletionCallback(
+    CompletionCallback completionCallback) {
+  completion_callback_ = std::move(completionCallback);
+}
+
+void RequestTaskImpl::setTaskDelegate(
+    std::weak_ptr<RequestTaskDelegate> delegate) {
+  delegate_ = delegate;
 }
 
 void RequestTaskImpl::DidFinished(HttpStatusCode http_code,
