@@ -62,7 +62,7 @@ private:
 class AutoSyncFileMapping final : public Mapping {
 public:
   explicit AutoSyncFileMapping(const char *path,
-                               uint block_size = 2 * 1024 * 1024);
+                               uint block_size = 10 * 1024 * 1024);
 
   ~AutoSyncFileMapping() override ;
 
@@ -79,11 +79,10 @@ private:
 
 private:
   bool valid_ = false;
-  size_t left_space_size_ = 0;
-  uint block_size_ = 2 * 1024 * 1024;
+  uint block_size_ = 10 * 1024 * 1024;
   uint8_t* mapping_ = nullptr;
   size_t mapping_size_ = 0;
-
+  size_t left_space_size_ = 0;
   ffbase::UniqueFD file_fd_;
 
   FF_DISALLOW_COPY_AND_ASSIGN(AutoSyncFileMapping);
@@ -91,8 +90,8 @@ private:
 
 class DataMapping final : public Mapping {
 public:
-  DataMapping(std::vector<uint8_t> data);
-  DataMapping(const std::string& data);
+  explicit DataMapping(std::vector<uint8_t> data);
+  explicit DataMapping(const std::string& data);
 
   ~DataMapping() override ;
 

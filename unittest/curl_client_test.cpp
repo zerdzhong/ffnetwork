@@ -32,6 +32,19 @@ TEST(CurlClientTests, request) {
   EXPECT_EQ(response->request()->headerMap()["User-Agent"], "test_ua");
 }
 
+TEST(CurlClientTests, head_request) {
+  auto client = CreateClient();
+  EXPECT_NE((void *)0, client.get());
+
+  auto url = "https://bing.com";
+  auto request = CreateRequest(url, {});
+
+  request->setMethod(ffnetwork::HeadMethod);
+
+  auto response = client->PerformRequestSync(request);
+  EXPECT_NE(response.get(), nullptr);
+}
+
 TEST(CurlClientTests, request_batch) {
   auto client = CreateClient();
   EXPECT_NE((void *)0, client.get());

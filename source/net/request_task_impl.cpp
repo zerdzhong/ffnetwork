@@ -64,7 +64,7 @@ void RequestTaskImpl::HandleInfo::ConstructCurlHandle(
   curl_easy_setopt(handle, CURLOPT_HEADERFUNCTION, header_callback);
   curl_easy_setopt(handle, CURLOPT_WRITEHEADER, task_ptr);
 
-  curl_easy_setopt(handle, CURLOPT_TIMEOUT, 30);
+//  curl_easy_setopt(handle, CURLOPT_TIMEOUT, 30);
 
 #if __APPLE__
   curl_easy_setopt(handle, CURLOPT_SSL_VERIFYPEER, false);
@@ -178,7 +178,7 @@ void RequestTaskImpl::DidFinished(HttpStatusCode http_code,
   }
 
   if (auto delegate = delegate_.lock()) {
-    delegate->OnRequestTaskComplete(this, response_code);
+    delegate->OnRequestTaskComplete(this, response_, response_code);
   }
 }
 
@@ -195,7 +195,7 @@ void RequestTaskImpl::DidCancelled() {
   }
 
   if (auto delegate = delegate_.lock()) {
-    delegate->OnRequestTaskComplete(this, ErrorCode::UserCancel);
+    delegate->OnRequestTaskComplete(this, cancelled_response ,ErrorCode::UserCancel);
   }
 }
 

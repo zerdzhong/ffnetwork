@@ -131,13 +131,13 @@ void CurlClient::Run() {
 
   while (!is_terminated_) {
 
-    loop.RunForTime(ffbase::TimeDelta::FromMilliseconds(50));
-
     curl_multi_perform(curl_multi_handle_, &active_requests);
 
     if (HandleCurlMsg()) {
       continue;
     }
+
+    loop.RunExpiredTasksNow();
 
     if (active_requests > 0) {
       if (use_multi_wait_) {
@@ -173,7 +173,6 @@ bool CurlClient::HandleCurlMsg() {
       CURL *handle = msg->easy_handle;
 
       curl_easy_getinfo(handle, CURLINFO_PRIVATE, &request_hash);
-
 
       auto response_code = ConvertCurlCode(msg->data.result);
 
