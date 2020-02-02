@@ -28,9 +28,11 @@ public:
   {
 
     ToFullPath();
-    output_fd_ = ffbase::OpenFile(path_.c_str(), true, ffbase::FilePermission::kReadWrite);
 
-    FF_DCHECK(output_fd_.is_valid());
+    output_file_mapping_ =
+        std::unique_ptr<ffbase::AutoSyncFileMapping>(new ffbase::AutoSyncFileMapping(path_.c_str()));
+
+    FF_DCHECK(output_file_mapping_->IsValid());
   }
 
   void SyncStart() {
@@ -74,27 +76,28 @@ public:
     }
 
     path_ += file_name;
-
-    return ;
   }
 #pragma mark- RequestTaskDelegate
   void
   OnReceiveResponse(ffnetwork::RequestTask *task,
                     std::shared_ptr<ffnetwork::Response> response) override {
-    ffbase::TruncateFile(output_fd_, response->expectedContentLength());
-    if (!output_file_mapping_) {
-      output_file_mapping_ = std::unique_ptr<ffbase::FileMapping>(new ffbase::FileMapping(
-          output_fd_, {ffbase::FileMapping::Protection::kWrite}));
+
+    auto content_length = response->expectedContentLength();
+
+    if (content_length <= 0) {
+      content_length = 1;
     }
+
   }
+
   void OnReceiveData(ffnetwork::RequestTask *task, char *data,
                      size_t length) override {
-    auto * mapping = output_file_mapping_->GetMutableMapping();
-    ::memcpy(mapping + offset_, data, length);
+    output_file_mapping_->AppendData((uint8_t*)data, length);
     offset_ += length;
   }
+
   void OnRequestTaskComplete(ffnetwork::RequestTask *task,
-                             ffnetwork::ResponseCode result) override {
+                             ffnetwork::ErrorCode result) override {
     std::unique_lock<std::mutex> lock(mutex_);
     download_finish_ = true;
     cv_.notify_one();
@@ -109,8 +112,7 @@ private:
   std::atomic<bool> download_finish_;
   int offset_ = 0;
 
-  ffbase::UniqueFD output_fd_;
-  std::unique_ptr<ffbase::FileMapping> output_file_mapping_;
+  std::unique_ptr<ffbase::AutoSyncFileMapping> output_file_mapping_;
 };
 
 }//namespace fftool

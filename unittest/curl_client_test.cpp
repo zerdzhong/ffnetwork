@@ -104,9 +104,9 @@ TEST(CurlClientTests, request_batch) {
   EXPECT_NE(response2.get(), nullptr);
   EXPECT_NE(response3.get(), nullptr);
 
-  EXPECT_NE(response1->responseCode(), ResponseCode::Invalid);
-  EXPECT_NE(response2->responseCode(), ResponseCode::Invalid);
-  EXPECT_NE(response3->responseCode(), ResponseCode::Invalid);
+  EXPECT_NE(response1->responseCode(), ErrorCode::Invalid);
+  EXPECT_NE(response2->responseCode(), ErrorCode::Invalid);
+  EXPECT_NE(response3->responseCode(), ErrorCode::Invalid);
 }
 
 TEST(CurlClientTests, Cancel) {
@@ -141,7 +141,7 @@ TEST(CurlClientTests, Cancel) {
   EXPECT_EQ(request_task->isCancelled(), true);
   EXPECT_NE((void *)0, cancelled_response.get());
   EXPECT_EQ(cancelled_response->cancelled(), true);
-  EXPECT_EQ(cancelled_response->responseCode(), ResponseCode::UserCancel);
+  EXPECT_EQ(cancelled_response->responseCode(), ErrorCode::UserCancel);
   EXPECT_EQ(cancelled_response->statusCode(),
             HttpStatusCode::StatusCodeInvalid);
 }

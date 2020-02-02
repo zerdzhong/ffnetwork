@@ -46,7 +46,7 @@ public:
   bool isCancelled() override;
 
   void DidCancelled();
-  void DidFinished(HttpStatusCode http_code, ResponseCode response_code);
+  void DidFinished(HttpStatusCode http_code, ErrorCode response_code);
 
   void OnReceiveData(char *data, size_t length);
   void OnReceiveHeader(char *data, size_t length);

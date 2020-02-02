@@ -194,23 +194,23 @@ bool CurlClient::HandleCurlMsg() {
   return msg_count > 0;
 }
 
-ResponseCode CurlClient::ConvertCurlCode(CURLcode code) {
-  ResponseCode response_code;
+ErrorCode CurlClient::ConvertCurlCode(CURLcode code) {
+  ErrorCode response_code;
   switch (code) {
   case CURLE_OK: {
-    response_code = ResponseCode::OK;
+    response_code = ErrorCode::OK;
     break;
   }
   case CURLE_COULDNT_CONNECT: {
-    response_code = ResponseCode::ConnectToServerFailed;
+    response_code = ErrorCode::ConnectToServerFailed;
     break;
   }
   case CURLE_OPERATION_TIMEDOUT: {
-    response_code = ResponseCode::Timeout;
+    response_code = ErrorCode::Timeout;
     break;
   }
   default:
-    response_code = ResponseCode(2000 + code);
+    response_code = ErrorCode(2000 + code);
     break;
   }
 

@@ -9,25 +9,26 @@ namespace ffnetwork {
 
 #pragma mark - CurlCallback
 
-size_t RequestTaskImpl::write_callback(char *data, size_t size, size_t nitems,
+size_t RequestTaskImpl::write_callback(char *data, size_t size, size_t items,
                                        void *str) {
   auto * task_ptr = static_cast<RequestTaskImpl *>(str);
   if (task_ptr == nullptr) {
     return 0;
   }
-  task_ptr->OnReceiveData(data, size * nitems);
-  return size * nitems;
+
+  task_ptr->OnReceiveData(data, size * items);
+  return size * items;
 }
 
-size_t RequestTaskImpl::header_callback(char *data, size_t size, size_t nitems,
+size_t RequestTaskImpl::header_callback(char *data, size_t size, size_t items,
                                         void *str) {
   auto * task_ptr = static_cast<RequestTaskImpl *>(str);
   if (task_ptr == nullptr) {
     return 0;
   }
 
-  task_ptr->OnReceiveHeader(data, size * nitems);
-  return size * nitems;
+  task_ptr->OnReceiveHeader(data, size * items);
+  return size * items;
 }
 
 #pragma mark - HandleInfo
@@ -162,11 +163,12 @@ void RequestTaskImpl::setTaskDelegate(
 }
 
 void RequestTaskImpl::DidFinished(HttpStatusCode http_code,
-                                  ResponseCode response_code) {
+                                  ErrorCode response_code) {
   auto request = request_;
 
   FF_LOG_P(DEBUG, "Got response for: %s", request->url().c_str());
   FF_LOG_P(DEBUG, "Response code: %lu", http_code);
+
   FillMetrics();
 
   response_->Construct(request, http_code, response_code, metrics_);
@@ -174,6 +176,7 @@ void RequestTaskImpl::DidFinished(HttpStatusCode http_code,
   if (completion_callback_) {
     completion_callback_(response_);
   }
+
   if (auto delegate = delegate_.lock()) {
     delegate->OnRequestTaskComplete(this, response_code);
   }
@@ -184,7 +187,7 @@ void RequestTaskImpl::DidCancelled() {
   cancelled_ = true;
 
   std::shared_ptr<Response> cancelled_response = std::make_shared<ResponseImpl>(
-      request_, HttpStatusCode::StatusCodeInvalid, ResponseCode::UserCancel,
+      request_, HttpStatusCode::StatusCodeInvalid, ErrorCode::UserCancel,
       metrics_, true);
 
   if (completion_callback_) {
@@ -192,7 +195,7 @@ void RequestTaskImpl::DidCancelled() {
   }
 
   if (auto delegate = delegate_.lock()) {
-    delegate->OnRequestTaskComplete(this, ResponseCode::UserCancel);
+    delegate->OnRequestTaskComplete(this, ErrorCode::UserCancel);
   }
 }
 

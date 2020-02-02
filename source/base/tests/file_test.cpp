@@ -14,7 +14,7 @@ static bool WriteStringToFile(const ffbase::UniqueFD& fd,
     return false;
   }
 
-  ffbase::FileMapping mapping(fd, {ffbase::FileMapping::Protection::kWrite});
+  ffbase::FileMapping mapping(fd, {ffbase::Protection::kWrite});
   if (mapping.GetSize() != contents.size()) {
     return false;
   }
@@ -77,7 +77,7 @@ TEST(FileTest, CanTruncateAndWrite) {
 
     ASSERT_TRUE(ffbase::TruncateFile(fd, contents.size()));
 
-    ffbase::FileMapping mapping(fd, {ffbase::FileMapping::Protection::kWrite});
+    ffbase::FileMapping mapping(fd, {ffbase::Protection::kWrite});
     ASSERT_EQ(mapping.GetSize(), contents.size());
     ASSERT_NE(mapping.GetMutableMapping(), nullptr);
 

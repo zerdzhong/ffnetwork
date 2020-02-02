@@ -57,7 +57,7 @@ enum class HttpStatusCode : int {
   StatusCodeHTTPVersionNotSupported = 505
 };
 
-enum class ResponseCode : int {
+enum class ErrorCode : int {
   Invalid = -1,
   OK = 0,                // success
   InvalidHandle = 1000,  // invalid handle
@@ -96,7 +96,7 @@ public:
   virtual std::string url() const = 0;
 
   virtual HttpStatusCode statusCode() const = 0;
-  virtual ResponseCode responseCode() const = 0;
+  virtual ErrorCode responseCode() const = 0;
   virtual uint64_t expectedContentLength() const = 0;
   virtual std::string mimeType() const = 0;
   virtual std::string encodingType() const = 0;

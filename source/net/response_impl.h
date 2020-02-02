@@ -15,7 +15,7 @@ class ResponseImpl : public Response {
 public:
   ResponseImpl();
   ResponseImpl(const std::shared_ptr<Request> &request,
-               HttpStatusCode status_code, ResponseCode response_code,
+               HttpStatusCode status_code, ErrorCode response_code,
                const std::shared_ptr<Metrics> &metrics, bool cancelled);
   ResponseImpl(const std::string &serialised, const unsigned char *data,
                size_t data_length,
@@ -24,7 +24,7 @@ public:
   virtual ~ResponseImpl();
 
   void Construct(const std::shared_ptr<Request> &request,
-                 HttpStatusCode status_code, ResponseCode response_code,
+                 HttpStatusCode status_code, ErrorCode response_code,
                  const std::shared_ptr<Metrics> &metrics);
 
   // Response
@@ -35,7 +35,7 @@ public:
   void setUrl(const std::string& url);
 
   HttpStatusCode statusCode() const override;
-  ResponseCode responseCode() const override;
+  ErrorCode responseCode() const override;
 
   uint64_t expectedContentLength() const override ;
   std::string mimeType() const override ;
@@ -58,7 +58,7 @@ private:
   std::shared_ptr<Request> request_;
   std::shared_ptr<Metrics> metrics_;
   HttpStatusCode status_code_;
-  ResponseCode response_code_;
+  ErrorCode response_code_;
   const bool cancelled_;
   std::unordered_map<std::string, std::string> headers_;
   std::unordered_map<std::string, std::string> metadata_;

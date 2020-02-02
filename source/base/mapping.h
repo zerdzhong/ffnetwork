@@ -27,13 +27,13 @@ private:
   FF_DISALLOW_COPY_AND_ASSIGN(Mapping);
 };
 
+enum class Protection {
+  kRead,
+  kWrite,
+};
+
 class FileMapping final : public Mapping {
 public:
-  enum class Protection {
-    kRead,
-    kWrite,
-  };
-
   explicit FileMapping(const ffbase::UniqueFD &fd,
                        std::initializer_list<Protection> protection = {
                            Protection::kRead});
@@ -57,6 +57,36 @@ private:
   uint8_t* mutable_mapping_ = nullptr;
 
   FF_DISALLOW_COPY_AND_ASSIGN(FileMapping);
+};
+
+class AutoSyncFileMapping final : public Mapping {
+public:
+  explicit AutoSyncFileMapping(const char *path,
+                               uint block_size = 2 * 1024 * 1024);
+
+  ~AutoSyncFileMapping() override ;
+
+  size_t GetSize() const override ;
+  const uint8_t* GetMapping() const override ;
+
+  bool AppendData(const uint8_t* data, size_t length);
+  bool IsValid() const;
+
+private:
+  bool GrowFileSpace();
+  bool SyncMap();
+  bool TryMap();
+
+private:
+  bool valid_ = false;
+  size_t left_space_size_ = 0;
+  uint block_size_ = 2 * 1024 * 1024;
+  uint8_t* mapping_ = nullptr;
+  size_t mapping_size_ = 0;
+
+  ffbase::UniqueFD file_fd_;
+
+  FF_DISALLOW_COPY_AND_ASSIGN(AutoSyncFileMapping);
 };
 
 class DataMapping final : public Mapping {

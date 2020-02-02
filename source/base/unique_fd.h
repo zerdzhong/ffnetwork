@@ -7,13 +7,14 @@
 
 #include "unique_object.h"
 #include <unistd.h>
+#include <fcntl.h>
 
 namespace ffbase {
 namespace internal {
 
 struct UniqueFDTraits {
   static int InvalidValue() { return -1; }
-  static bool IsValid(int value) { return value >= 0; }
+  static bool IsValid(int value) { return value >= 0 || value == AT_FDCWD; }
   static void Free(int fd) { close(fd); };
 };
 

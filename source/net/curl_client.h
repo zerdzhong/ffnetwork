@@ -62,7 +62,7 @@ private:
   void WaitMulti(long timeout_ms);
   void WaitFD(long timeout_ms);
   bool HandleCurlMsg();
-  static ResponseCode ConvertCurlCode(CURLcode);
+  static ErrorCode ConvertCurlCode(CURLcode);
 };
 
 extern std::shared_ptr<Client> CreateCurlClient();

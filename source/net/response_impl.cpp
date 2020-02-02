@@ -13,8 +13,7 @@ namespace ffnetwork {
 ResponseImpl::ResponseImpl() : cancelled_(false) {}
 
 ResponseImpl::ResponseImpl(const std::shared_ptr<Request> &request,
-                           HttpStatusCode status_code,
-                           ResponseCode response_code,
+                           HttpStatusCode status_code, ErrorCode response_code,
                            const std::shared_ptr<Metrics> &metrics,
                            bool cancelled)
     : request_(request), metrics_(metrics), status_code_(status_code),
@@ -24,14 +23,14 @@ ResponseImpl::ResponseImpl(const std::string &serialised,
                            const unsigned char *data, size_t data_length,
                            const std::shared_ptr<Response> &response)
     : status_code_(HttpStatusCode::StatusCodeInvalid),
-      response_code_(ResponseCode::OK), cancelled_(false) {}
+      response_code_(ErrorCode::OK), cancelled_(false) {}
 
 ResponseImpl::~ResponseImpl() = default;
 
 void ResponseImpl::Construct(const std::shared_ptr<Request> &request,
-               HttpStatusCode status_code, ResponseCode response_code,
-               const std::shared_ptr<Metrics> &metrics)
-{
+                             HttpStatusCode status_code,
+                             ErrorCode response_code,
+                             const std::shared_ptr<Metrics> &metrics) {
   request_ = request;
   status_code_ = status_code;
   response_code_ = response_code;
@@ -49,7 +48,7 @@ std::shared_ptr<Metrics> ResponseImpl::metrics() const {
 
 HttpStatusCode ResponseImpl::statusCode() const { return status_code_; }
 
-ResponseCode ResponseImpl::responseCode() const { return response_code_; }
+ErrorCode ResponseImpl::responseCode() const { return response_code_; }
 
 bool ResponseImpl::cancelled() const { return cancelled_; }
 

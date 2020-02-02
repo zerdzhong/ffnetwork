@@ -198,7 +198,7 @@ bool WriteAtomically(const ffbase::UniqueFD &base_dir, const char *file_name,
     return false;
   }
 
-  FileMapping mapping(tmp_file, {FileMapping::Protection::kWrite});
+  FileMapping mapping(tmp_file, {Protection::kWrite});
 
   if (mapping.GetMutableMapping() == nullptr ||
       mapping.GetSize() != data.GetSize()) {
